@@ -1,0 +1,14 @@
+{
+  "entityTypeExtensions": [
+    {
+      "entityType": "Project",
+      "properties": {
+        "settings": {
+          "type": "string",
+          "multi": false,
+          "description": "The ticket lock settings of the project, as a JSON string."
+        }
+      }
+    }
+  ]
+}

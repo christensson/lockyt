@@ -1,0 +1,27 @@
+.widget {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ring-unit) * 2);
+  margin: calc(var(--ring-unit) / 2);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ring-unit);
+  border: 1px solid var(--ring-line-color);
+  border-radius: var(--ring-border-radius);
+  padding: calc(var(--ring-unit) * 2);
+  margin: 0;
+}
+
+.legend {
+  padding: 0 var(--ring-unit);
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ring-unit) * 2);
+}

@@ -1,0 +1,26 @@
+{
+  "name": "ticketlockyt",
+  "title": "Ticket Lock",
+  "description": "Locks a ticket when the ticket becomes resolved. A locked ticket is read-only. To edit a locked ticket, reopen it first.",
+  "$schema": "https://json.schemastore.org/youtrack-app.json",
+  "version": "1.0.0",
+  "minYouTrackVersion": "2024.3.0",
+  "vendor": {
+    "name": "Marcus Christensson",
+    "url": "https://github.com/christensson/ticketlockyt"
+  },
+  "icon": "icon.svg",
+  "widgets": [
+    {
+      "key": "project-tag",
+      "name": "Ticket Lock",
+      "indexPath": "project-tag/index.html",
+      "extensionPoint": "PROJECT_SETTINGS",
+      "iconPath": "project-tag/widget-icon.svg",
+      "description": "Sets who can reopen a locked ticket, and which changes stay permitted while the ticket is locked.",
+      "permissions": [
+        "UPDATE_PROJECT"
+      ]
+    }
+  ]
+}
