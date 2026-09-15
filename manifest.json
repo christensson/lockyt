@@ -36,6 +36,22 @@
         "width": 600,
         "height": 24
       }
+    },
+    {
+      "key": "ticket-status",
+      "name": "Lock status",
+      "indexPath": "ticket-status/index.html",
+      "extensionPoint": "ISSUE_FIELD_PANEL_LAST",
+      "iconPath": "ticket-status/widget-icon.svg",
+      "description": "Shows that a resolved ticket is locked, and what the lock permits.",
+      "guard": "({entity}) => entity.isResolved === true || entity.resolved != null",
+      "permissions": [
+        "READ_ISSUE"
+      ],
+      "expectedDimensions": {
+        "width": 300,
+        "height": 24
+      }
     }
   ]
 }

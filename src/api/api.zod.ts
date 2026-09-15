@@ -148,6 +148,29 @@ export const setArticleLockResSchema = z.object({
   allowChildArticles: z.boolean(),
 });
 
+export const ticketLockReqSchema = z.object({
+  refresh: z.boolean().optional(),
+});
+
+export const ticketLockResSchema = z.object({
+  isResolved: z.boolean(),
+  enabled: z.boolean(),
+  unlockRestriction: z.union([
+    z.literal("anyone"),
+    z.literal("reporter"),
+    z.literal("projectAdmins"),
+  ]),
+  allowComments: z.boolean(),
+  allowLinks: z.boolean(),
+  allowWorkItems: z.boolean(),
+  allowAttachments: z.boolean(),
+  allowTags: z.boolean(),
+  reporterLogin: z.string(),
+  reporterName: z.string(),
+  currentUserLogin: z.string(),
+  canReopen: z.boolean(),
+});
+
 export const ticketSettingsReqSchema = z.object({
   projectId: z.string(),
 });
@@ -177,6 +200,14 @@ export const schema = {
       POST: {
         Req: setArticleLockReqSchema,
         Res: setArticleLockResSchema
+      }
+    }
+  },
+  issue: {
+    lock: {
+      GET: {
+        Req: ticketLockReqSchema,
+        Res: ticketLockResSchema
       }
     }
   },

@@ -40,6 +40,11 @@ the **Lock** tab, section **Tickets**. These settings are available:
 The app rejects each change that is not in the list above. This includes a custom field, the
 summary, the description, and the visibility.
 
+A resolved ticket shows a **Lock status** line at the end of its field panel: a lock icon and
+"Ticket resolved and locked.", or "Ticket locks are disabled in this project." when the lock for
+tickets is off. Click the information icon to see what the settings permit on the ticket, and who
+can reopen it. An unresolved ticket does not show the line.
+
 The app keeps the settings of each project as one JSON string in the `settings` extension property
 of the project. The string has the shape `{ "version": 1, "ticket": { ... }, "article": { ... } }`.
 The backend checks the settings before it keeps them.
@@ -194,11 +199,13 @@ src/
 │   ├── router/                   # File-based API routes
 │   │   ├── project/ticketSettings/   # Reads and keeps the ticket settings of a project
 │   │   ├── project/articleSettings/  # Reads and keeps the article settings of a project
-│   │   └── article/lock/         # Reads the freeze state; freezes and unfreezes
+│   │   ├── article/lock/         # Reads the freeze state; freezes and unfreezes
+│   │   └── issue/lock/           # Reads the lock state of a ticket
 │   ├── shared/
 │   │   ├── lock-settings.ts      # The settings model, the checks and the defaults
 │   │   ├── permissions.ts        # Who is a project admin; who can freeze, unfreeze, reopen
-│   │   └── article-lock.ts       # The freeze state and the freeze and unfreeze operations
+│   │   ├── article-lock.ts       # The freeze state and the freeze and unfreeze operations
+│   │   └── ticket-lock.ts        # The lock state of a ticket
 │   ├── types/                    # Backend type definitions
 │   │   ├── backend.global.d.ts   # Global backend types and context types
 │   │   └── utility.d.ts          # Utility types for RPC extraction
@@ -211,7 +218,9 @@ src/
 │       └── logger.ts             # Logger utility for frontend components
 ├── widgets/
 │   ├── project-tag/              # The Lock tab in the settings of the project
-│   └── article-status/           # The status line above the activity stream of an article
+│   ├── article-status/           # The status line above the activity stream of an article
+│   ├── ticket-status/            # The status line in the field panel of a resolved ticket
+│   └── shared/                   # The dialog and the frame logic that the status lines share
 ├── entity-extensions.json        # Declares the extension properties of a project and an article
 └── app-id.ts                     # App identifier
 ```

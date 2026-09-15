@@ -1,6 +1,7 @@
 import { ExtractRPCFromHandler } from "../backend/types/utility";
 import * as articleLockGETHandler from "../backend/router/article/lock/GET";
 import * as articleLockPOSTHandler from "../backend/router/article/lock/POST";
+import * as issueLockGETHandler from "../backend/router/issue/lock/GET";
 import * as projectArticleSettingsGETHandler from "../backend/router/project/articleSettings/GET";
 import * as projectArticleSettingsPOSTHandler from "../backend/router/project/articleSettings/POST";
 import * as projectTicketSettingsGETHandler from "../backend/router/project/ticketSettings/GET";
@@ -11,6 +12,11 @@ export type ApiRouter = {
         lock: {
             GET: ExtractRPCFromHandler<articleLockGETHandler.Handle>;
             POST: ExtractRPCFromHandler<articleLockPOSTHandler.Handle>;
+        };
+    };
+    issue: {
+        lock: {
+            GET: ExtractRPCFromHandler<issueLockGETHandler.Handle>;
         };
     };
     project: {
