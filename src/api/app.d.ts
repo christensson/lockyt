@@ -1,3 +1,5 @@
+import type { User } from '@jetbrains/youtrack-workflow-types/workflowTypeScriptStubs';
+
 /**
  * App Settings - Auto-generated types for app settings and extension properties
  * 
@@ -40,7 +42,12 @@ declare global {
    * Article extension properties type from entity-extensions.json
    * Automatically accessible via article.extensionProperties when using ExtendedArticle
    */
-  type ArticleExtensionProperties = Record<string, never>;
+  type ArticleExtensionProperties = {
+      isLocked?: boolean;
+      lockedBy?: User;
+      lockedAt?: number;
+      version?: number;
+    };
   
   /**
    * User extension properties type from entity-extensions.json

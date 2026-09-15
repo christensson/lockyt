@@ -1,10 +1,10 @@
 {
   "name": "ticketlockyt",
-  "title": "Ticket Lock",
-  "description": "Locks a ticket when the ticket becomes resolved. A locked ticket is read-only. To edit a locked ticket, reopen it first.",
+  "title": "Lock",
+  "description": "Locks a resolved ticket and a frozen article. A locked ticket or a frozen article is read-only. To edit it, reopen the ticket or unfreeze the article first.",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
   "version": "1.0.0",
-  "minYouTrackVersion": "2024.3.0",
+  "minYouTrackVersion": "2025.3.0",
   "vendor": {
     "name": "Marcus Christensson",
     "url": "https://github.com/christensson/ticketlockyt"
@@ -13,14 +13,29 @@
   "widgets": [
     {
       "key": "project-tag",
-      "name": "Ticket Lock",
+      "name": "Lock",
       "indexPath": "project-tag/index.html",
       "extensionPoint": "PROJECT_SETTINGS",
       "iconPath": "project-tag/widget-icon.svg",
-      "description": "Sets who can reopen a locked ticket, and which changes stay permitted while the ticket is locked.",
+      "description": "Sets who can reopen a locked ticket or unfreeze a frozen article, and which changes stay permitted.",
       "permissions": [
         "UPDATE_PROJECT"
       ]
+    },
+    {
+      "key": "article-status",
+      "name": "Lock status",
+      "indexPath": "article-status/index.html",
+      "extensionPoint": "ARTICLE_ABOVE_ACTIVITY_STREAM",
+      "iconPath": "article-status/widget-icon.svg",
+      "description": "Shows if the article is frozen. Freezes or unfreezes the article.",
+      "permissions": [
+        "READ_ARTICLE"
+      ],
+      "expectedDimensions": {
+        "width": 600,
+        "height": 24
+      }
     }
   ]
 }

@@ -5,8 +5,9 @@ import type {
   Project as ProjectEntity,
   User as UserEntity
 } from '@jetbrains/youtrack-workflow-types/workflowTypeScriptStubs';
-import { parseSettings } from '../backend/shared/ticket-lock-settings';
-import type { TicketLockSettings } from '../backend/shared/ticket-lock-settings';
+import { readProjectLockSettings } from '../backend/shared/lock-settings';
+import type { TicketLockSettings } from '../backend/shared/lock-settings';
+import { canReopenTicket, isProjectAdmin } from '../backend/shared/permissions';
 import { requirements } from '../backend/requirements';
 
 /**
@@ -20,13 +21,6 @@ import { requirements } from '../backend/requirements';
 
 /** The data type name of a period field, for example "Spent time". */
 const PERIOD_TYPE = 'period';
-
-/** A user that can possibly answer a permission question. */
-type PermissionProbe = {
-  login: string;
-  hasPermission?: (permissionKey: string, project: ProjectEntity) => boolean;
-  hasRole?: (roleName: string, project: ProjectEntity) => boolean;
-};
 
 /** One custom field that changes in the transaction. */
 type ChangedField = {
@@ -48,7 +42,7 @@ type ChangeSet = {
  * @returns The settings, with a default for each field that is absent.
  */
 function readSettings(project: ProjectEntity): TicketLockSettings {
-  return parseSettings(project.extensionProperties.settings);
+  return readProjectLockSettings(project).ticket;
 }
 
 /**
@@ -182,37 +176,6 @@ function collectBlockedParts(issue: IssueEntity, settings: TicketLockSettings): 
 }
 
 /**
- * Tells if a user is an administrator of a project.
- *
- * The function uses `hasPermission` first. YouTrack added that method in
- * version 2025.3. On an older instance the function uses the role name and
- * the project leader.
- *
- * @param user The user to check.
- * @param project The project to check.
- * @returns True if the user is a project admin.
- */
-function isProjectAdmin(user: UserEntity, project: ProjectEntity): boolean {
-  const probe = user as unknown as PermissionProbe;
-  try {
-    if (typeof probe.hasPermission === 'function') {
-      return probe.hasPermission('UPDATE_PROJECT', project);
-    }
-  } catch (error) {
-    console.warn('[ticket-lock] hasPermission failed: ' + String(error));
-  }
-  try {
-    if (typeof probe.hasRole === 'function' && probe.hasRole('Project Admin', project)) {
-      return true;
-    }
-  } catch (error) {
-    console.warn('[ticket-lock] hasRole failed: ' + String(error));
-  }
-  const leader = project.leader;
-  return !!leader && leader.login === user.login;
-}
-
-/**
  * Tells if a user can reopen a locked ticket.
  *
  * A project admin can always reopen a ticket.
@@ -229,17 +192,9 @@ function canReopen(
   issue: IssueEntity,
   project: ProjectEntity
 ): boolean {
-  if (isProjectAdmin(user, project)) {
-    return true;
-  }
-  if (settings.unlockRestriction === 'anyone') {
-    return true;
-  }
-  if (settings.unlockRestriction === 'reporter') {
-    const reporter = issue.reporter;
-    return !!reporter && reporter.login === user.login;
-  }
-  return false;
+  const reporter = issue.reporter;
+  const isReporter = !!reporter && reporter.login === user.login;
+  return canReopenTicket(settings.unlockRestriction, isProjectAdmin(user, project), isReporter);
 }
 
 /**

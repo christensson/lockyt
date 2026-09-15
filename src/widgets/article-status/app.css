@@ -1,0 +1,56 @@
+:root {
+  /* The dialog must not dim the page. Ring UI paints the overlay with this opacity. */
+  --ring-dialog-overlay-opacity: 0;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: var(--ring-unit);
+  height: 24px;
+  padding: 0 calc(var(--ring-unit) / 2);
+  white-space: nowrap;
+  color: var(--ring-secondary-color);
+  font-size: var(--ring-font-size-smaller);
+  line-height: var(--ring-line-height-lowest);
+}
+
+.frozen {
+  color: var(--ring-success-color);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.messageBody {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ring-unit) / 2);
+  max-width: 420px;
+}
+
+.messageBody p {
+  margin: 0;
+}
+
+.messageBody .heading {
+  margin-top: var(--ring-unit);
+  font-weight: bold;
+}
+
+.messageBody ul {
+  margin: 0;
+  padding-left: calc(var(--ring-unit) * 2);
+}

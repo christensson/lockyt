@@ -6,7 +6,28 @@
         "settings": {
           "type": "string",
           "multi": false,
-          "description": "The ticket lock settings of the project, as a JSON string."
+          "description": "The lock settings of the project, as a JSON string."
+        }
+      }
+    },
+    {
+      "entityType": "Article",
+      "properties": {
+        "isLocked": {
+          "type": "boolean",
+          "description": "True when the article is frozen and read-only."
+        },
+        "lockedBy": {
+          "type": "User",
+          "description": "The user who froze the article."
+        },
+        "lockedAt": {
+          "type": "integer",
+          "description": "The timestamp in milliseconds indicating the moment when the article was frozen. Stored as a unix timestamp at UTC."
+        },
+        "version": {
+          "type": "integer",
+          "description": "The number of times the article was frozen."
         }
       }
     }

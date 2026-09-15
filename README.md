@@ -8,6 +8,16 @@ For comprehensive documentation, see [@jetbrains/youtrack-apps-tools](https://gi
 
 ## What the App Does
 
+The app locks two kinds of entity:
+
+- A **ticket** locks when the ticket becomes resolved. See [Tickets](#tickets).
+- An **article** locks when a user freezes it. See [Articles](#articles).
+
+A locked ticket or a frozen article is read-only. The rule rejects each change and shows a
+message.
+
+### Tickets
+
 The app locks a ticket when the ticket becomes resolved. A locked ticket is read-only. The rule
 rejects each change to a locked ticket and shows a message. The user keeps no change.
 
@@ -15,7 +25,7 @@ The one permitted change is to reopen the ticket. Reopen the ticket alone. Do no
 change in the same save.
 
 A project admin sets the behaviour for each project. Open the settings of the project, then open
-the **Ticket Lock** tab. These settings are available:
+the **Lock** tab, section **Tickets**. These settings are available:
 
 | Setting | Default | Description |
 | --- | --- | --- |
@@ -30,8 +40,9 @@ the **Ticket Lock** tab. These settings are available:
 The app rejects each change that is not in the list above. This includes a custom field, the
 summary, the description, and the visibility.
 
-The app keeps the settings of each project as a JSON string. The app keeps the string in the
-`settings` extension property of the project. The backend checks the settings before it keeps them.
+The app keeps the settings of each project as one JSON string in the `settings` extension property
+of the project. The string has the shape `{ "version": 1, "ticket": { ... }, "article": { ... } }`.
+The backend checks the settings before it keeps them.
 
 ### Notes on the Behaviour
 
@@ -43,6 +54,70 @@ The app keeps the settings of each project as a JSON string. The app keeps the s
 - A reopen can also carry a change that the settings permit, for example a comment. It cannot
   carry a change to a field, the summary, or the description.
 - A ticket that a user creates directly in a resolved state is not locked. A draft is not locked.
+
+### Articles
+
+A user **freezes** an article to lock it. Freeze = lock. A frozen article is read-only. A user
+**unfreezes** the article to edit it again. Unfreeze = unlock. An article that is not frozen is
+**editable**.
+
+The **author** is the user who created the article. **The user who froze the article** is the user
+who last made it frozen.
+
+A status line above the activity stream of the article shows the state: "Editable", or "Frozen by
+<user> <time>". Click the state icon to freeze or unfreeze. The widget asks you to confirm. Click
+the information icon to see what the settings permit on the article, and who can unfreeze it.
+
+A project admin sets the behaviour for each project. Open the settings of the project, then open
+the **Lock** tab, section **Articles**. These settings are available:
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| Make a frozen article read-only | On | Turns the lock for articles on or off for the project. |
+| Who can unfreeze a frozen article | Anyone with edit access | See the table below. |
+| Comments | Permitted | Lets a user add, edit, or remove a comment on a frozen article. |
+| Child articles | Permitted | Lets a user add or remove a child article of a frozen article. |
+| Tags | Permitted | Lets a user add or remove a tag on a frozen article. |
+| Attachments | Not permitted | Lets a user add or remove an attachment on a frozen article. |
+
+The app rejects each other change to a frozen article: the title, the content and the visibility.
+A user can always move a frozen article to a different parent article.
+
+**A user can freeze an article only if the same user can also unfreeze it.** Nobody can lock
+themselves out. A project admin can always freeze and unfreeze.
+
+| Who can unfreeze | Project admin | Author | Other editor |
+| --- | --- | --- | --- |
+| Anyone with edit access | Freeze and unfreeze | Freeze and unfreeze | Freeze and unfreeze |
+| The author | Freeze and unfreeze | Freeze and unfreeze | Neither |
+| The user who froze the article | Freeze and unfreeze | Freeze. Unfreeze only as the user who froze it | Freeze. Unfreeze only as the user who froze it |
+| The author or the user who froze the article | Freeze and unfreeze | Freeze and unfreeze | Freeze. Unfreeze only as the user who froze it |
+| Project admins only | Freeze and unfreeze | Neither | Neither |
+
+In the stored settings the values of `article.unlockRestriction` are `anyone`, `author`,
+`lockedBy`, `authorOrLockedBy` and `projectAdmins`.
+
+The app keeps the freeze state in four extension properties of the article: `isLocked`,
+`lockedBy`, `lockedAt` (milliseconds since 1970-01-01T00:00Z) and `version`. The `version`
+counter starts at 0 and goes up by one each time a user freezes the article. Unfreeze clears
+`lockedBy` and `lockedAt`.
+
+#### Notes on the Behaviour for Articles
+
+- **An edit survives a block.** You edit a frozen article in an editor that saves at the end. The
+  rule runs at that save. The message appears then, and your text stays in the editor. Unfreeze
+  the article, then save again.
+- **A block on a frozen parent cancels the operation on the child.** If child articles are not
+  permitted, the app rejects the creation, the move, or the deletion of a child article. The
+  message names the parent article.
+- **The handler checks the project permission, not the article visibility.** A user who can
+  update articles in the project, but who cannot see this article, can still freeze it through the
+  endpoint if the user knows the ID.
+- **The lock off leaves a frozen article frozen.** Unfreeze still works. Nothing else does.
+- **Two admins who save two settings sections at the same moment** write the same string. The
+  window is milliseconds.
+- Deletion, a move to a different project, the order of the rules, a bulk operation and an
+  integration account: the same limits as for tickets.
 
 ### Known Limits
 
@@ -71,6 +146,8 @@ The app keeps the settings of each project as a JSON string. The app keeps the s
 ## Table of Contents
 
 - [What the App Does](#what-the-app-does)
+  - [Tickets](#tickets)
+  - [Articles](#articles)
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Available Scripts](#available-scripts)
@@ -115,21 +192,27 @@ src/
 │   └── extended-entities.d.ts    # Generated extension property types (auto-generated)
 ├── backend/
 │   ├── router/                   # File-based API routes
-│   │   └── project/settings/     # Reads and keeps the settings of a project
+│   │   ├── project/ticketSettings/   # Reads and keeps the ticket settings of a project
+│   │   ├── project/articleSettings/  # Reads and keeps the article settings of a project
+│   │   └── article/lock/         # Reads the freeze state; freezes and unfreezes
 │   ├── shared/
-│   │   └── ticket-lock-settings.ts  # The settings model, the checks and the defaults
+│   │   ├── lock-settings.ts      # The settings model, the checks and the defaults
+│   │   ├── permissions.ts        # Who is a project admin; who can freeze, unfreeze, reopen
+│   │   └── article-lock.ts       # The freeze state and the freeze and unfreeze operations
 │   ├── types/                    # Backend type definitions
 │   │   ├── backend.global.d.ts   # Global backend types and context types
 │   │   └── utility.d.ts          # Utility types for RPC extraction
 │   └── requirements.ts           # YouTrack fields and values that your app needs
 ├── workflows/
-│   └── lock-resolved-ticket.ts   # The rule that locks a resolved ticket
+│   ├── lock-resolved-ticket.ts   # The rule that locks a resolved ticket
+│   └── lock-frozen-article.ts    # The rule that locks a frozen article
 ├── common/
 │   └── utils/
 │       └── logger.ts             # Logger utility for frontend components
 ├── widgets/
-│   └── project-tag/              # The settings tab of the project
-├── entity-extensions.json        # Declares the `settings` property of a project
+│   ├── project-tag/              # The Lock tab in the settings of the project
+│   └── article-status/           # The status line above the activity stream of an article
+├── entity-extensions.json        # Declares the extension properties of a project and an article
 └── app-id.ts                     # App identifier
 ```
 

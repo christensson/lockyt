@@ -5,35 +5,50 @@ import Loader from '@jetbrains/ring-ui-built/components/loader/loader';
 import Select from '@jetbrains/ring-ui-built/components/select/select';
 import Text from '@jetbrains/ring-ui-built/components/text/text';
 import {createApi} from '@/api';
-import {defaultSettings} from '@/backend/shared/ticket-lock-settings';
-import type {TicketLockSettings, UnlockRestriction} from '@/backend/shared/ticket-lock-settings';
+import {defaultArticleSettings, defaultTicketSettings} from '@/backend/shared/lock-settings';
+import type {ArticleLockSettings, TicketLockSettings} from '@/backend/shared/lock-settings';
 
 const host = await YTApp.register();
 const api = createApi(host);
 
-/** One option of the list that tells who can reopen a locked ticket. */
-type RestrictionItem = {
-  key: UnlockRestriction;
+/** The smallest width of the list that opens under a drop-down, in pixels. */
+const POPUP_MIN_WIDTH = 320;
+
+/** One option of a list that tells who can unlock. */
+type RestrictionItem<R extends string> = {
+  key: R;
   label: string;
   description: string;
 };
 
-/** One checkbox that tells which change stays permitted on a locked ticket. */
-type ToggleItem = {
-  key: keyof TicketLockSettings;
+/** One checkbox that tells which change stays permitted. */
+type ToggleItem<T> = {
+  key: keyof T;
   label: string;
 };
 
-const RESTRICTION_ITEMS: RestrictionItem[] = [
+/** The result that a save gives back. */
+type SaveResult = {
+  ok: boolean;
+  errors: string[];
+};
+
+/** The smallest shape of a settings section. */
+type SectionValue<R extends string> = {
+  enabled: boolean;
+  unlockRestriction: R;
+};
+
+const TICKET_RESTRICTIONS: RestrictionItem<TicketLockSettings['unlockRestriction']>[] = [
   {
     key: 'anyone',
     label: 'Anyone with update access',
-    description: 'Each user that can update the ticket can also reopen it.'
+    description: 'Each user who can update the ticket can also reopen it.'
   },
   {
     key: 'reporter',
-    label: 'The reporter (and project admins)',
-    description: 'The user that created the ticket can reopen it. A project admin can always reopen it.'
+    label: 'The reporter',
+    description: 'Only the reporter or a project admin can reopen the ticket.'
   },
   {
     key: 'projectAdmins',
@@ -42,12 +57,47 @@ const RESTRICTION_ITEMS: RestrictionItem[] = [
   }
 ];
 
-const TOGGLE_ITEMS: ToggleItem[] = [
+const TICKET_TOGGLES: ToggleItem<TicketLockSettings>[] = [
   {key: 'allowComments', label: 'Comments'},
   {key: 'allowLinks', label: 'Links'},
   {key: 'allowWorkItems', label: 'Work items (logged time)'},
   {key: 'allowAttachments', label: 'Attachments'},
   {key: 'allowTags', label: 'Tags'}
+];
+
+const ARTICLE_RESTRICTIONS: RestrictionItem<ArticleLockSettings['unlockRestriction']>[] = [
+  {
+    key: 'anyone',
+    label: 'Anyone with edit access',
+    description: 'Each user who can edit the article can freeze and unfreeze it.'
+  },
+  {
+    key: 'author',
+    label: 'The author',
+    description: 'Only the author or a project admin can freeze and unfreeze the article.'
+  },
+  {
+    key: 'lockedBy',
+    label: 'The user who froze the article',
+    description: 'Each editor can freeze. Only the user who froze the article or a project admin can unfreeze it.'
+  },
+  {
+    key: 'authorOrLockedBy',
+    label: 'The author or the user who froze the article',
+    description: 'Each editor can freeze. The author, the user who froze the article or a project admin can unfreeze it.'
+  },
+  {
+    key: 'projectAdmins',
+    label: 'Project admins only',
+    description: 'Only a project admin can freeze and unfreeze the article.'
+  }
+];
+
+const ARTICLE_TOGGLES: ToggleItem<ArticleLockSettings>[] = [
+  {key: 'allowComments', label: 'Comments'},
+  {key: 'allowChildArticles', label: 'Child articles (add or remove)'},
+  {key: 'allowTags', label: 'Tags'},
+  {key: 'allowAttachments', label: 'Attachments'}
 ];
 
 /**
@@ -63,11 +113,105 @@ function projectId(): string | null {
   return entity.id;
 }
 
+type SectionProps<T extends SectionValue<R>, R extends string> = {
+  title: string;
+  intro: string;
+  enableLabel: string;
+  restrictionTitle: string;
+  restrictionNote: string;
+  restrictions: RestrictionItem<R>[];
+  toggleTitle: string;
+  toggles: ToggleItem<T>[];
+  value: T;
+  onChange: (key: keyof T, next: unknown) => void;
+};
+
+/**
+ * One section of the settings: the lock for tickets, or the lock for articles.
+ *
+ * The section only shows and changes the value. The parent component reads
+ * and keeps the settings of both sections.
+ */
+function LockSection<T extends SectionValue<R>, R extends string>(props: SectionProps<T, R>): React.ReactElement {
+  const {value, onChange} = props;
+  const selected = props.restrictions.find(item => item.key === value.unlockRestriction) ?? null;
+
+  return (
+    <section className="section">
+      <h2 className="title">{props.title}</h2>
+      <Text info>{props.intro}</Text>
+
+      <Checkbox
+        label={props.enableLabel}
+        checked={value.enabled}
+        onChange={event => onChange('enabled', event.target.checked)}
+      />
+
+      <fieldset className="group" disabled={!value.enabled}>
+        <legend className="legend">{props.restrictionTitle}</legend>
+        <Select
+          data={props.restrictions}
+          selected={selected}
+          onSelect={item => { if (item) { onChange('unlockRestriction', item.key); } }}
+          type={Select.Type.BUTTON}
+          size={Select.Size.L}
+          minWidth={POPUP_MIN_WIDTH}
+          disabled={!value.enabled}
+          label={props.restrictionTitle}
+        />
+        {selected && <Text info>{selected.description}</Text>}
+        <Text info>{props.restrictionNote}</Text>
+      </fieldset>
+
+      <fieldset className="group" disabled={!value.enabled}>
+        <legend className="legend">{props.toggleTitle}</legend>
+        {props.toggles.map(item => (
+          <Checkbox
+            key={String(item.key)}
+            label={item.label}
+            checked={value[item.key] as unknown as boolean}
+            disabled={!value.enabled}
+            onChange={event => onChange(item.key, event.target.checked)}
+          />
+        ))}
+        <Text info>{'The app rejects each change that is not in this list.'}</Text>
+      </fieldset>
+    </section>
+  );
+}
+
+const loadTicket = (id: string): Promise<TicketLockSettings> =>
+  api.project.ticketSettings.GET({projectId: id}) as Promise<TicketLockSettings>;
+
+const saveTicket = (id: string, value: TicketLockSettings): Promise<SaveResult> =>
+  api.project.ticketSettings.POST({projectId: id, ...value});
+
+const loadArticle = (id: string): Promise<ArticleLockSettings> =>
+  api.project.articleSettings.GET({projectId: id}) as Promise<ArticleLockSettings>;
+
+const saveArticle = (id: string, value: ArticleLockSettings): Promise<SaveResult> =>
+  api.project.articleSettings.POST({projectId: id, ...value});
+
+/**
+ * Joins the errors of the two saves, with the name of the section in front.
+ */
+function joinErrors(ticket: SaveResult, article: SaveResult): string {
+  const parts: string[] = [];
+  if (!ticket.ok) {
+    parts.push('Tickets: ' + ticket.errors.join(' '));
+  }
+  if (!article.ok) {
+    parts.push('Articles: ' + article.errors.join(' '));
+  }
+  return parts.join(' ');
+}
+
 const AppComponent: React.FunctionComponent = () => {
-  const [settings, setSettings] = useState<TicketLockSettings>(defaultSettings);
+  const [ticket, setTicket] = useState<TicketLockSettings>(defaultTicketSettings);
+  const [article, setArticle] = useState<ArticleLockSettings>(defaultArticleSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -77,25 +221,23 @@ const AppComponent: React.FunctionComponent = () => {
       setLoading(false);
       return;
     }
-    api.project.settings.GET({projectId: id})
-      .then(result => { setSettings(result as TicketLockSettings); })
-      .catch((cause: unknown) => {
-        setError('The app cannot read the settings: ' + String(cause));
+    Promise.all([loadTicket(id), loadArticle(id)])
+      .then(([ticketValue, articleValue]) => {
+        setTicket(ticketValue);
+        setArticle(articleValue);
       })
+      .catch((cause: unknown) => { setError('The app cannot read the settings: ' + String(cause)); })
       .finally(() => { setLoading(false); });
   }, []);
 
-  const change = useCallback((key: keyof TicketLockSettings, value: boolean) => {
+  const changeTicket = useCallback((key: keyof TicketLockSettings, next: unknown) => {
     setSaved(false);
-    setSettings(previous => ({...previous, [key]: value}));
+    setTicket(previous => ({...previous, [key]: next}));
   }, []);
 
-  const changeRestriction = useCallback((item: RestrictionItem | null) => {
-    if (!item) {
-      return;
-    }
+  const changeArticle = useCallback((key: keyof ArticleLockSettings, next: unknown) => {
     setSaved(false);
-    setSettings(previous => ({...previous, unlockRestriction: item.key}));
+    setArticle(previous => ({...previous, [key]: next}));
   }, []);
 
   const save = useCallback(async () => {
@@ -107,74 +249,52 @@ const AppComponent: React.FunctionComponent = () => {
     setError('');
     setSaved(false);
     try {
-      const result = await api.project.settings.POST({
-        projectId: id,
-        enabled: settings.enabled,
-        unlockRestriction: settings.unlockRestriction,
-        allowComments: settings.allowComments,
-        allowLinks: settings.allowLinks,
-        allowWorkItems: settings.allowWorkItems,
-        allowAttachments: settings.allowAttachments,
-        allowTags: settings.allowTags
-      });
-      if (result.ok) {
+      const [ticketResult, articleResult] = await Promise.all([saveTicket(id, ticket), saveArticle(id, article)]);
+      if (ticketResult.ok && articleResult.ok) {
         setSaved(true);
       } else {
-        setError(result.errors.join(' '));
+        setError(joinErrors(ticketResult, articleResult));
       }
     } catch (cause: unknown) {
       setError('The app cannot save the settings: ' + String(cause));
     } finally {
       setSaving(false);
     }
-  }, [settings]);
+  }, [ticket, article]);
 
   if (loading) {
     return <div className="widget"><Loader message="The app reads the settings."/></div>;
   }
 
-  const selected = RESTRICTION_ITEMS.find(item => item.key === settings.unlockRestriction) ?? null;
-
   return (
     <div className="widget">
-      <Text info>
-        {'The app locks a ticket when the ticket becomes resolved. A locked ticket is read-only. ' +
-         'To edit a locked ticket, reopen it first.'}
-      </Text>
-
-      <Checkbox
-        label="Lock a resolved ticket"
-        checked={settings.enabled}
-        onChange={event => change('enabled', event.target.checked)}
+      <LockSection
+        title="Tickets"
+        intro={'The app locks a ticket when the ticket becomes resolved. A locked ticket is read-only. ' +
+          'To edit a locked ticket, reopen it first.'}
+        enableLabel="Lock a resolved ticket"
+        restrictionTitle="Who can reopen a locked ticket"
+        restrictionNote="A project admin can always reopen a locked ticket."
+        restrictions={TICKET_RESTRICTIONS}
+        toggleTitle="What stays permitted on a locked ticket"
+        toggles={TICKET_TOGGLES}
+        value={ticket}
+        onChange={changeTicket}
       />
-
-      <fieldset className="group" disabled={!settings.enabled}>
-        <legend className="legend">{'Who can reopen a locked ticket'}</legend>
-        <Select
-          data={RESTRICTION_ITEMS}
-          selected={selected}
-          onSelect={changeRestriction}
-          type={Select.Type.BUTTON}
-          disabled={!settings.enabled}
-          label="Select who can reopen a locked ticket"
-        />
-        {selected && <Text info>{selected.description}</Text>}
-        <Text info>{'A project admin can always reopen a locked ticket.'}</Text>
-      </fieldset>
-
-      <fieldset className="group" disabled={!settings.enabled}>
-        <legend className="legend">{'What stays permitted on a locked ticket'}</legend>
-        {TOGGLE_ITEMS.map(item => (
-          <Checkbox
-            key={item.key}
-            label={item.label}
-            checked={settings[item.key] as boolean}
-            disabled={!settings.enabled}
-            onChange={event => change(item.key, event.target.checked)}
-          />
-        ))}
-        <Text info>{'The app rejects each change that is not in this list.'}</Text>
-      </fieldset>
+      <LockSection
+        title="Articles"
+        intro={'A user freezes an article to lock it. A frozen article is read-only. ' +
+          'To edit a frozen article, unfreeze it first. ' +
+          'A user can freeze an article only if the same user can also unfreeze it.'}
+        enableLabel="Make a frozen article read-only"
+        restrictionTitle="Who can unfreeze a frozen article"
+        restrictionNote="A project admin can always freeze and unfreeze an article."
+        restrictions={ARTICLE_RESTRICTIONS}
+        toggleTitle="What stays permitted on a frozen article"
+        toggles={ARTICLE_TOGGLES}
+        value={article}
+        onChange={changeArticle}
+      />
 
       <div className="actions">
         <Button primary loader={saving} disabled={saving} onClick={save}>{'Save'}</Button>

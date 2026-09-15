@@ -1,9 +1,15 @@
-import type { ExtendedProject } from './extended-entities.js';
+import type { ExtendedArticle, ExtendedProject } from './extended-entities.js';
 
 /**
  * Project context with extended entity (includes extension properties)
  */
 export type ExtendedProjectCtx<T extends import('@jetbrains/youtrack-apps-tools/dx').ProjectCtx> =
   Omit<T, 'project'> & { project: ExtendedProject };
+
+/**
+ * Article context with extended entity (includes extension properties)
+ */
+export type ExtendedArticleCtx<T extends import('@jetbrains/youtrack-apps-tools/dx').ArticleCtx> =
+  Omit<T, 'article'> & { article: ExtendedArticle };
 
 

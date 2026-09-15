@@ -25,3 +25,16 @@
   align-items: center;
   gap: calc(var(--ring-unit) * 2);
 }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ring-unit) * 2);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--ring-font-size-larger);
+  line-height: var(--ring-line-height-taller);
+  font-weight: bold;
+}
