@@ -1,7 +1,7 @@
 {
   "name": "lockyt",
   "title": "Lock",
-  "description": "Locks a resolved ticket and a frozen article. A locked ticket or a frozen article is read-only. To edit it, reopen the ticket or unfreeze the article first.",
+  "description": "Locks resolved tickets and freeze articles on request. A locked ticket or a frozen article is read-only. To edit it, reopen the ticket or unfreeze the article first.",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
   "version": "1.0.0",
   "minYouTrackVersion": "2025.3.0",
