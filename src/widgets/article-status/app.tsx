@@ -66,13 +66,14 @@ function LockIcon({state, onClick}: IconProps): React.ReactElement {
 
 type StatusProps = {
   state: ArticleLockRes;
-  onFreeze: () => void;
+  onToggle: () => void;
 };
 
 /**
- * The status text. An editable article gets an inline button to freeze it.
+ * The status text. An editable article gets an inline button to freeze it,
+ * and a frozen one an inline button to unfreeze it, when the user may.
  */
-function StatusLine({state, onFreeze}: StatusProps): React.ReactElement {
+function StatusLine({state, onToggle}: StatusProps): React.ReactElement {
   if (state.isLocked) {
     const who = state.lockedByName || 'an unknown user';
     // The tooltip is the native one of the browser. A Ring UI tooltip is a
@@ -83,7 +84,10 @@ function StatusLine({state, onFreeze}: StatusProps): React.ReactElement {
         <span title={isoTime(state.lockedAt)}>
           {relativeTime(state.lockedAt, YTApp.locale)}
         </span>
-        {state.enabled ? '' : '. The lock for articles is off in this project.'}
+        {'. '}
+        {state.canUnlock ? <Button inline onClick={onToggle}>{'Unfreeze'}</Button> : 'Unfreeze'}
+        {' to update.'}
+        {state.enabled ? '' : ' The lock for articles is off in this project.'}
       </span>
     );
   }
@@ -93,7 +97,7 @@ function StatusLine({state, onFreeze}: StatusProps): React.ReactElement {
   return (
     <span>
       {'Editable. '}
-      <Button inline onClick={onFreeze}>{'Freeze article'}</Button>
+      <Button inline onClick={onToggle}>{'Freeze article'}</Button>
       {'.'}
     </span>
   );
@@ -209,7 +213,7 @@ const AppComponent: React.FunctionComponent = () => {
         </>
       )}
 
-      {mode === 'view' && <StatusLine state={state} onFreeze={() => setMode('confirm')}/>}
+      {mode === 'view' && <StatusLine state={state} onToggle={() => setMode('confirm')}/>}
 
       <Button
         inline

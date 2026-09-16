@@ -69,9 +69,9 @@ A user **freezes** an article to lock it. Freeze = lock. A frozen article is rea
 The **author** is the user who created the article. **The user who froze the article** is the user
 who last made it frozen.
 
-A status line above the activity stream of the article shows the state: "Editable", or "Frozen by
-<user> <time>". Click the state icon to freeze or unfreeze. The widget asks you to confirm. Click
-the information icon to see what the settings permit on the article, and who can unfreeze it.
+A status line above the activity stream of the article shows the state: "Editable. Freeze
+article.", or "Frozen by <user> <time>. Unfreeze to update.". Click "Freeze article", "Unfreeze",
+or the state icon to freeze or unfreeze. The widget asks you to confirm. Click the information icon to see what the settings permit on the article, and who can unfreeze it.
 
 A project admin sets the behaviour for each project. Open the settings of the project, then open
 the **Lock** tab, section **Articles**. These settings are available:
