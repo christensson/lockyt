@@ -1,4 +1,4 @@
-# Ticketlockyt
+# Lockyt
 
 A YouTrack app created with TypeScript
 

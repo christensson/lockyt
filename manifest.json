@@ -1,5 +1,5 @@
 {
-  "name": "ticketlockyt",
+  "name": "lockyt",
   "title": "Lock",
   "description": "Locks a resolved ticket and a frozen article. A locked ticket or a frozen article is read-only. To edit it, reopen the ticket or unfreeze the article first.",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
@@ -7,7 +7,7 @@
   "minYouTrackVersion": "2025.3.0",
   "vendor": {
     "name": "Marcus Christensson",
-    "url": "https://github.com/christensson/ticketlockyt"
+    "url": "https://github.com/christensson/lockyt"
   },
   "icon": "icon.svg",
   "widgets": [

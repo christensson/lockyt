@@ -1,1 +1,1 @@
-export const appId = 'ticketlockyt';
+export const appId = 'lockyt';
