@@ -5,13 +5,14 @@
 /** The part of the lock state that the sentences need. */
 export type TicketLockDescription = {
   enabled: boolean;
-  unlockRestriction: 'anyone' | 'reporter' | 'projectAdmins';
+  unlockRestriction: 'anyone' | 'reporter' | 'resolver' | 'reporterOrResolver' | 'projectAdmins';
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
   reporterName: string;
+  resolverName: string;
 };
 
 /**
@@ -75,11 +76,27 @@ export function blockedSentences(state: TicketLockDescription): string[] {
  * @returns One sentence.
  */
 export function whoCanReopen(state: TicketLockDescription): string {
-  if (state.unlockRestriction === 'reporter') {
-    const reporter = state.reporterName || 'not known';
+  const r = state.unlockRestriction;
+  const reporter = state.reporterName || 'not known';
+  const resolver = state.resolverName;
+  if (r === 'reporter') {
     return 'The reporter (' + reporter + ') or a project admin can reopen this ticket.';
   }
-  if (state.unlockRestriction === 'projectAdmins') {
+  if (r === 'resolver') {
+    if (!resolver) {
+      return 'The user who resolved the ticket is not known. A project admin can reopen this ticket.';
+    }
+    return 'The user who resolved the ticket (' + resolver + ') or a project admin can reopen it.';
+  }
+  if (r === 'reporterOrResolver') {
+    if (!resolver) {
+      return 'The user who resolved the ticket is not known. The reporter (' + reporter +
+        ') or a project admin can reopen this ticket.';
+    }
+    return 'The reporter (' + reporter + '), the user who resolved the ticket (' + resolver +
+      ') or a project admin can reopen it.';
+  }
+  if (r === 'projectAdmins') {
     return 'Only a project admin can reopen this ticket.';
   }
   return 'Each user who can update this ticket can reopen it.';

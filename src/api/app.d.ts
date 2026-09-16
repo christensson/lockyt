@@ -28,7 +28,10 @@ declare global {
    * Issue extension properties type from entity-extensions.json
    * Automatically accessible via issue.extensionProperties when using ExtendedIssue
    */
-  type IssueExtensionProperties = Record<string, never>;
+  type IssueExtensionProperties = {
+      resolvedBy?: User;
+      resolvedAt?: number;
+    };
   
   /**
    * Project extension properties type from entity-extensions.json

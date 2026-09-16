@@ -52,7 +52,7 @@ export function settingsVersion(): number {
 
 /** The permitted values of the ticket `unlockRestriction`. */
 export function ticketUnlockRestrictions(): TicketUnlockRestriction[] {
-  return ["anyone", "reporter", "projectAdmins"];
+  return ["anyone", "reporter", "resolver", "reporterOrResolver", "projectAdmins"];
 }
 
 /** The permitted values of the article `unlockRestriction`. */

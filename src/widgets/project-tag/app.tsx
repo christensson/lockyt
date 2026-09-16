@@ -51,6 +51,16 @@ const TICKET_RESTRICTIONS: RestrictionItem<TicketLockSettings['unlockRestriction
     description: 'Only the reporter or a project admin can reopen the ticket.'
   },
   {
+    key: 'resolver',
+    label: 'The user who resolved the ticket',
+    description: 'Only the user who resolved the ticket or a project admin can reopen it.'
+  },
+  {
+    key: 'reporterOrResolver',
+    label: 'The reporter or the user who resolved the ticket',
+    description: 'The reporter, the user who resolved the ticket or a project admin can reopen it.'
+  },
+  {
     key: 'projectAdmins',
     label: 'Project admins only',
     description: 'Only a project admin can reopen the ticket.'

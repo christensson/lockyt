@@ -30,7 +30,7 @@ the **Lock** tab, section **Tickets**. These settings are available:
 | Setting | Default | Description |
 | --- | --- | --- |
 | Lock a resolved ticket | On | Turns the lock on or off for the project. |
-| Who can reopen a locked ticket | Anyone with update access | Select `Anyone with update access`, `The reporter`, or `Project admins only`. A project admin can always reopen a ticket. |
+| Who can reopen a locked ticket | Anyone with update access | Select `Anyone with update access`, `The reporter`, `The user who resolved the ticket`, `The reporter or the user who resolved the ticket`, or `Project admins only`. A project admin can always reopen a ticket. |
 | Comments | Permitted | Lets a user add, edit, or remove a comment on a locked ticket. |
 | Links | Permitted | Lets a user add or remove a link on a locked ticket. |
 | Work items | Permitted | Lets a user log time on a locked ticket. |
@@ -41,13 +41,21 @@ The app rejects each change that is not in the list above. This includes a custo
 summary, the description, and the visibility.
 
 A resolved ticket shows a **Lock status** line at the end of its field panel: a lock icon and
-"Ticket resolved and locked.", or "Ticket locks are disabled in this project." when the lock for
-tickets is off. Click the information icon to see what the settings permit on the ticket, and who
+"Ticket resolved and locked by <user> <time>.", or "Ticket locks are disabled in this project."
+when the lock for tickets is off. The line reads "Ticket resolved and locked." when the app does
+not know who resolved the ticket. Click the information icon to see what the settings permit on the ticket, and who
 can reopen it. An unresolved ticket does not show the line.
 
 The app keeps the settings of each project as one JSON string in the `settings` extension property
 of the project. The string has the shape `{ "version": 1, "ticket": { ... }, "article": { ... } }`.
-The backend checks the settings before it keeps them.
+The backend checks the settings before it keeps them. In the stored settings the values of
+`ticket.unlockRestriction` are `anyone`, `reporter`, `resolver`, `reporterOrResolver` and
+`projectAdmins`.
+
+YouTrack does not record who resolved a ticket, so the app does. The rule **Record who resolved a
+ticket** sets two extension properties of the ticket when it becomes resolved: `resolvedBy` (the
+user) and `resolvedAt` (milliseconds since 1970-01-01T00:00Z). The rule runs also when the lock for
+tickets is off, so that the data exists if an admin turns the lock on later.
 
 ### Notes on the Behaviour
 
@@ -58,6 +66,10 @@ The backend checks the settings before it keeps them.
   reopen the ticket first.
 - A reopen can also carry a change that the settings permit, for example a comment. It cannot
   carry a change to a field, the summary, or the description.
+- A ticket that became resolved before the app was installed has no recorded resolver. Under
+  `The user who resolved the ticket` only a project admin can reopen it. Under `The reporter or the
+  user who resolved the ticket` the reporter or a project admin can.
+- A reopen does not clear `resolvedBy` and `resolvedAt`. The next resolution overwrites them.
 - A ticket that a user creates directly in a resolved state is not locked. A draft is not locked.
 
 ### Articles
@@ -205,13 +217,14 @@ src/
 │   │   ├── lock-settings.ts      # The settings model, the checks and the defaults
 │   │   ├── permissions.ts        # Who is a project admin; who can freeze, unfreeze, reopen
 │   │   ├── article-lock.ts       # The freeze state and the freeze and unfreeze operations
-│   │   └── ticket-lock.ts        # The lock state of a ticket
+│   │   └── ticket-lock.ts        # The lock state of a ticket; who resolved it; who can reopen
 │   ├── types/                    # Backend type definitions
 │   │   ├── backend.global.d.ts   # Global backend types and context types
 │   │   └── utility.d.ts          # Utility types for RPC extraction
 │   └── requirements.ts           # YouTrack fields and values that your app needs
 ├── workflows/
 │   ├── lock-resolved-ticket.ts   # The rule that locks a resolved ticket
+│   ├── record-ticket-resolver.ts # The rule that records who resolved a ticket, and when
 │   └── lock-frozen-article.ts    # The rule that locks a frozen article
 ├── common/
 │   └── utils/
@@ -221,7 +234,7 @@ src/
 │   ├── article-status/           # The status line above the activity stream of an article
 │   ├── ticket-status/            # The status line in the field panel of a resolved ticket
 │   └── shared/                   # The dialog and the frame logic that the status lines share
-├── entity-extensions.json        # Declares the extension properties of a project and an article
+├── entity-extensions.json        # Declares the extension properties of a project, a ticket and an article
 └── app-id.ts                     # App identifier
 ```
 

@@ -7,7 +7,8 @@ import type {
 } from '@jetbrains/youtrack-workflow-types/workflowTypeScriptStubs';
 import { readProjectLockSettings } from '../backend/shared/lock-settings';
 import type { TicketLockSettings } from '../backend/shared/lock-settings';
-import { canReopenTicket, isProjectAdmin } from '../backend/shared/permissions';
+import { canReopenTicket } from '../backend/shared/permissions';
+import { reopenRule, ticketUnlockFacts } from '../backend/shared/ticket-lock';
 import { requirements } from '../backend/requirements';
 
 /**
@@ -178,23 +179,16 @@ function collectBlockedParts(issue: IssueEntity, settings: TicketLockSettings): 
 /**
  * Tells if a user can reopen a locked ticket.
  *
- * A project admin can always reopen a ticket.
+ * A project admin can always reopen a ticket. The facts come from the same
+ * function that the status widget uses.
  *
  * @param settings The settings of the project.
  * @param user The user that makes the change.
  * @param issue The ticket that changes.
- * @param project The project that holds the settings.
  * @returns True if the user can reopen the ticket.
  */
-function canReopen(
-  settings: TicketLockSettings,
-  user: UserEntity,
-  issue: IssueEntity,
-  project: ProjectEntity
-): boolean {
-  const reporter = issue.reporter;
-  const isReporter = !!reporter && reporter.login === user.login;
-  return canReopenTicket(settings.unlockRestriction, isProjectAdmin(user, project), isReporter);
+function canReopen(settings: TicketLockSettings, user: UserEntity, issue: IssueEntity): boolean {
+  return canReopenTicket(settings.unlockRestriction, ticketUnlockFacts(issue, user));
 }
 
 /**
@@ -272,21 +266,19 @@ function collectChanges(
  * and the parts that the settings permit. It cannot change another field.
  *
  * @param issue The ticket that changes.
- * @param project The project that holds the settings.
  * @param settings The settings of the project.
  * @param user The user that makes the change.
  * @param changes The changes in the transaction.
  */
 function checkReopen(
   issue: IssueEntity,
-  project: ProjectEntity,
   settings: TicketLockSettings,
   user: UserEntity,
   changes: ChangeSet
 ): void {
   check(
-    canReopen(settings, user, issue, project),
-    'You cannot reopen ticket ' + issue.id + '. Ask a project admin to reopen it.'
+    canReopen(settings, user, issue),
+    'You cannot reopen ticket ' + issue.id + '. ' + reopenRule(settings.unlockRestriction)
   );
 
   const extraFields = changes.fields.filter(name => name !== changes.resolvingField);
@@ -324,7 +316,7 @@ export const rule = Issue.onChange({
     const changes = collectChanges(issue, project, settings);
 
     if (issue.becomesUnresolved) {
-      checkReopen(issue, project, settings, ctx.currentUser, changes);
+      checkReopen(issue, settings, ctx.currentUser, changes);
       return;
     }
 

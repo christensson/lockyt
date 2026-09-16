@@ -16,7 +16,7 @@
  * @see https://www.jetbrains.com/help/youtrack/devportal/apps-extension-properties.html
  */
 
-import type { ExtendedArticle, ExtendedProject } from './extended-entities.js';
+import type { ExtendedArticle, ExtendedIssue, ExtendedProject } from './extended-entities.js';
 
 // Import the augmentation to ensure it's loaded
 import './extended-entities.js';
@@ -28,6 +28,8 @@ declare global {
    */
   namespace GlobalContextTypes {
     interface ExtendedEntities {
+        /** Available when scope is 'issue' - automatically uses ExtendedIssue if available */
+  issue?: ExtendedIssue;
         /** Available when scope is 'project' - automatically uses ExtendedProject if available */
   project?: ExtendedProject;
         /** Available when scope is 'article' - automatically uses ExtendedArticle if available */
@@ -37,4 +39,4 @@ declare global {
 }
 
 // Re-export extended entities for convenience
-export type { ExtendedArticle, ExtendedProject } from './extended-entities.js';
+export type { ExtendedArticle, ExtendedIssue, ExtendedProject } from './extended-entities.js';

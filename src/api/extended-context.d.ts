@@ -1,4 +1,10 @@
-import type { ExtendedArticle, ExtendedProject } from './extended-entities.js';
+import type { ExtendedArticle, ExtendedIssue, ExtendedProject } from './extended-entities.js';
+
+/**
+ * Issue context with extended entity (includes extension properties)
+ */
+export type ExtendedIssueCtx<T extends import('@jetbrains/youtrack-apps-tools/dx').IssueCtx> =
+  Omit<T, 'issue'> & { issue: ExtendedIssue };
 
 /**
  * Project context with extended entity (includes extension properties)

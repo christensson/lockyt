@@ -7,7 +7,7 @@ import { defaultTicketSettings, saveTicketSettings } from '@/backend/shared/lock
 export type SaveTicketSettingsReq = {
   projectId: string;
   enabled: boolean;
-  unlockRestriction: "anyone" | "reporter" | "projectAdmins";
+  unlockRestriction: "anyone" | "reporter" | "resolver" | "reporterOrResolver" | "projectAdmins";
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;
@@ -22,7 +22,7 @@ export type SaveTicketSettingsRes = {
   ok: boolean;
   errors: string[];
   enabled: boolean;
-  unlockRestriction: "anyone" | "reporter" | "projectAdmins";
+  unlockRestriction: "anyone" | "reporter" | "resolver" | "reporterOrResolver" | "projectAdmins";
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;

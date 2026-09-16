@@ -14,7 +14,7 @@ export type TicketLockReq = {
 export type TicketLockRes = {
   isResolved: boolean;
   enabled: boolean;
-  unlockRestriction: "anyone" | "reporter" | "projectAdmins";
+  unlockRestriction: "anyone" | "reporter" | "resolver" | "reporterOrResolver" | "projectAdmins";
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;
@@ -22,6 +22,9 @@ export type TicketLockRes = {
   allowTags: boolean;
   reporterLogin: string;
   reporterName: string;
+  resolverLogin: string;
+  resolverName: string;
+  resolvedAt: number;
   currentUserLogin: string;
   canReopen: boolean;
 };

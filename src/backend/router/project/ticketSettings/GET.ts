@@ -13,7 +13,7 @@ export type TicketSettingsReq = {
  */
 export type TicketSettingsRes = {
   enabled: boolean;
-  unlockRestriction: "anyone" | "reporter" | "projectAdmins";
+  unlockRestriction: "anyone" | "reporter" | "resolver" | "reporterOrResolver" | "projectAdmins";
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;

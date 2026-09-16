@@ -90,6 +90,8 @@ export const saveTicketSettingsReqSchema = z.object({
   unlockRestriction: z.union([
     z.literal("anyone"),
     z.literal("reporter"),
+    z.literal("resolver"),
+    z.literal("reporterOrResolver"),
     z.literal("projectAdmins"),
   ]),
   allowComments: z.boolean(),
@@ -106,6 +108,8 @@ export const saveTicketSettingsResSchema = z.object({
   unlockRestriction: z.union([
     z.literal("anyone"),
     z.literal("reporter"),
+    z.literal("resolver"),
+    z.literal("reporterOrResolver"),
     z.literal("projectAdmins"),
   ]),
   allowComments: z.boolean(),
@@ -158,6 +162,8 @@ export const ticketLockResSchema = z.object({
   unlockRestriction: z.union([
     z.literal("anyone"),
     z.literal("reporter"),
+    z.literal("resolver"),
+    z.literal("reporterOrResolver"),
     z.literal("projectAdmins"),
   ]),
   allowComments: z.boolean(),
@@ -167,6 +173,9 @@ export const ticketLockResSchema = z.object({
   allowTags: z.boolean(),
   reporterLogin: z.string(),
   reporterName: z.string(),
+  resolverLogin: z.string(),
+  resolverName: z.string(),
+  resolvedAt: z.number(),
   currentUserLogin: z.string(),
   canReopen: z.boolean(),
 });
@@ -180,6 +189,8 @@ export const ticketSettingsResSchema = z.object({
   unlockRestriction: z.union([
     z.literal("anyone"),
     z.literal("reporter"),
+    z.literal("resolver"),
+    z.literal("reporterOrResolver"),
     z.literal("projectAdmins"),
   ]),
   allowComments: z.boolean(),

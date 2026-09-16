@@ -59,3 +59,24 @@ export function relativeTime(timestamp: number, locale: string, now: number = Da
   }
   return 'just now';
 }
+
+/** The number of digits of a zero-padded date or time part. */
+const TWO_DIGITS = 2;
+
+function pad(value: number): string {
+  return String(value).padStart(TWO_DIGITS, '0');
+}
+
+/**
+ * Makes the ISO 8601 text of a moment, in the local time zone of the user.
+ *
+ * The text has no time zone and a space in place of the "T".
+ *
+ * @param timestamp The moment, as milliseconds since 1970-01-01T00:00Z.
+ * @returns For example "2026-09-15 10:05:38".
+ */
+export function isoTime(timestamp: number): string {
+  const d = new Date(timestamp);
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}

@@ -6,7 +6,21 @@
  */
 
 /** The users who can move a locked ticket back to an unresolved state. */
-export type TicketUnlockRestriction = "anyone" | "reporter" | "projectAdmins";
+export type TicketUnlockRestriction =
+  | "anyone"
+  | "reporter"
+  | "resolver"
+  | "reporterOrResolver"
+  | "projectAdmins";
+
+/** The facts about the current user that decide a reopen of a ticket. */
+export type TicketUnlockFacts = {
+  isAdmin: boolean;
+  /** True if the current user created the ticket. */
+  isReporter: boolean;
+  /** True if the current user is the user who resolved the ticket. */
+  isResolver: boolean;
+};
 
 /** The users who can unfreeze a frozen article. */
 export type ArticleUnlockRestriction =
@@ -144,26 +158,29 @@ export function canLockArticle(restriction: ArticleUnlockRestriction, facts: Loc
 /**
  * Tells if a user can move a locked ticket back to an unresolved state.
  *
- * A project admin can always reopen a ticket.
+ * A project admin can always reopen a ticket. If the app does not know who
+ * resolved the ticket, the check fails closed: under `resolver` only an admin
+ * can reopen, and under `reporterOrResolver` only the reporter or an admin.
  *
  * @param restriction The setting of the project.
- * @param isAdmin True if the user is a project admin.
- * @param isReporter True if the user created the ticket.
+ * @param facts The facts about the user.
  * @returns True if the user can reopen the ticket.
  */
-export function canReopenTicket(
-  restriction: TicketUnlockRestriction,
-  isAdmin: boolean,
-  isReporter: boolean
-): boolean {
-  if (isAdmin) {
+export function canReopenTicket(restriction: TicketUnlockRestriction, facts: TicketUnlockFacts): boolean {
+  if (facts.isAdmin) {
     return true;
   }
   if (restriction === 'anyone') {
     return true;
   }
   if (restriction === 'reporter') {
-    return isReporter;
+    return facts.isReporter;
+  }
+  if (restriction === 'resolver') {
+    return facts.isResolver;
+  }
+  if (restriction === 'reporterOrResolver') {
+    return facts.isReporter || facts.isResolver;
   }
   return false;
 }
