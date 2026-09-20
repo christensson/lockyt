@@ -3,7 +3,7 @@
   "title": "Lock",
   "description": "Locks resolved issues and freeze articles on request. A locked issue or a frozen article is read-only. To edit it, reopen the issue or unfreeze the article first.",
   "$schema": "https://json.schemastore.org/youtrack-app.json",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "minYouTrackVersion": "2025.3.0",
   "vendor": {
     "name": "Marcus Christensson",
