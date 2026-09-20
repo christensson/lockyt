@@ -1,17 +1,17 @@
 import { withPermissions } from '@jetbrains/youtrack-apps-tools/dx/runtime';
-import { readTicketLockState } from '@/backend/shared/ticket-lock';
+import { readIssueLockState } from '@/backend/shared/issue-lock';
 
 /**
  * @zod-to-schema
  */
-export type TicketLockReq = {
+export type IssueLockReq = {
   refresh?: boolean;
 };
 
 /**
  * @zod-to-schema
  */
-export type TicketLockRes = {
+export type IssueLockRes = {
   isResolved: boolean;
   enabled: boolean;
   unlockRestriction: "anyone" | "reporter" | "resolver" | "reporterOrResolver" | "projectAdmins";
@@ -30,13 +30,13 @@ export type TicketLockRes = {
 };
 
 /**
- * Reads the lock state of the ticket for the current user.
+ * Reads the lock state of the issue for the current user.
  *
- * YouTrack gives the ticket from the widget context. The handler does not
+ * YouTrack gives the issue from the widget context. The handler does not
  * write anything: YouTrack rejects a GET handler that writes.
  */
-function handle(ctx: CtxGet<TicketLockRes, TicketLockReq, "issue">): void {
-  ctx.response.json(readTicketLockState(ctx.issue, ctx.currentUser));
+function handle(ctx: CtxGet<IssueLockRes, IssueLockReq, "issue">): void {
+  ctx.response.json(readIssueLockState(ctx.issue, ctx.currentUser));
 }
 
 export default withPermissions(handle, ['READ_ISSUE']);

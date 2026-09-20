@@ -6,17 +6,17 @@ import type {
   User as UserEntity
 } from '@jetbrains/youtrack-workflow-types/workflowTypeScriptStubs';
 import { readProjectLockSettings } from '../backend/shared/lock-settings';
-import type { TicketLockSettings } from '../backend/shared/lock-settings';
-import { canReopenTicket } from '../backend/shared/permissions';
-import { reopenRule, ticketUnlockFacts } from '../backend/shared/ticket-lock';
+import type { IssueLockSettings } from '../backend/shared/lock-settings';
+import { canReopenIssue } from '../backend/shared/permissions';
+import { reopenRule, issueUnlockFacts } from '../backend/shared/issue-lock';
 import { requirements } from '../backend/requirements';
 
 /**
- * Locks a ticket that is resolved.
+ * Locks an issue that is resolved.
  *
- * The rule rejects each change to a locked ticket. The one permitted change
- * is to reopen the ticket. The settings of the project tell which users can
- * reopen a ticket, and which changes stay permitted while the ticket is
+ * The rule rejects each change to a locked issue. The one permitted change
+ * is to reopen the issue. The settings of the project tell which users can
+ * reopen an issue, and which changes stay permitted while the issue is
  * locked.
  */
 
@@ -37,23 +37,23 @@ type ChangeSet = {
 };
 
 /**
- * Reads the ticket lock settings of a project.
+ * Reads the issue lock settings of a project.
  *
  * @param project The project that holds the settings.
  * @returns The settings, with a default for each field that is absent.
  */
-function readSettings(project: ProjectEntity): TicketLockSettings {
-  return readProjectLockSettings(project).ticket;
+function readSettings(project: ProjectEntity): IssueLockSettings {
+  return readProjectLockSettings(project).issue;
 }
 
 /**
- * Tells if the ticket was locked before the transaction.
+ * Tells if the issue was locked before the transaction.
  *
- * A ticket that becomes resolved in this transaction is not locked yet. That
+ * An issue that becomes resolved in this transaction is not locked yet. That
  * transaction must pass.
  *
- * @param issue The ticket that changes.
- * @returns True if the ticket was resolved before the transaction.
+ * @param issue The issue that changes.
+ * @returns True if the issue was resolved before the transaction.
  */
 function wasLocked(issue: IssueEntity): boolean {
   return issue.becomesUnresolved || (issue.isResolved && !issue.becomesResolved);
@@ -76,11 +76,11 @@ function isResolvedValue(value: unknown): boolean {
 /**
  * Finds each custom field that changes in the transaction.
  *
- * The function also finds the field that held the ticket in a resolved
+ * The function also finds the field that held the issue in a resolved
  * state. It does not use the name `State`, because a project can use a
  * different field.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @param project The project that holds the fields.
  * @returns The names of the changed fields and the name of the resolving field.
  */
@@ -110,7 +110,7 @@ function collectChangedFields(
 /**
  * Finds each link type that changes in the transaction.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @returns The names of the link types that change.
  */
 function collectChangedLinks(issue: IssueEntity): string[] {
@@ -119,7 +119,7 @@ function collectChangedLinks(issue: IssueEntity): string[] {
     const links = issue.links;
     const names = Object.keys(links);
     if (names.length === 0) {
-      console.warn('[ticket-lock] The ticket gave no link types.');
+      console.warn('[issue-lock] The issue gave no link types.');
     }
     for (let i = 0; i < names.length; i++) {
       const set = links[names[i]];
@@ -133,7 +133,7 @@ function collectChangedLinks(issue: IssueEntity): string[] {
       }
     }
   } catch (error) {
-    console.warn('[ticket-lock] The rule cannot read the links: ' + String(error));
+    console.warn('[issue-lock] The rule cannot read the links: ' + String(error));
   }
   return changed;
 }
@@ -144,11 +144,11 @@ function collectChangedLinks(issue: IssueEntity): string[] {
  * The function does not look at the custom fields. Use
  * `collectChangedFields` for the fields.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @param settings The settings of the project.
  * @returns The names of the changes that the settings do not permit.
  */
-function collectBlockedParts(issue: IssueEntity, settings: TicketLockSettings): string[] {
+function collectBlockedParts(issue: IssueEntity, settings: IssueLockSettings): string[] {
   const blocked: string[] = [];
 
   if (issue.isChanged('summary')) {
@@ -177,36 +177,36 @@ function collectBlockedParts(issue: IssueEntity, settings: TicketLockSettings): 
 }
 
 /**
- * Tells if a user can reopen a locked ticket.
+ * Tells if a user can reopen a locked issue.
  *
- * A project admin can always reopen a ticket. The facts come from the same
+ * A project admin can always reopen an issue. The facts come from the same
  * function that the status widget uses.
  *
  * @param settings The settings of the project.
  * @param user The user that makes the change.
- * @param issue The ticket that changes.
- * @returns True if the user can reopen the ticket.
+ * @param issue The issue that changes.
+ * @returns True if the user can reopen the issue.
  */
-function canReopen(settings: TicketLockSettings, user: UserEntity, issue: IssueEntity): boolean {
-  return canReopenTicket(settings.unlockRestriction, ticketUnlockFacts(issue, user));
+function canReopen(settings: IssueLockSettings, user: UserEntity, issue: IssueEntity): boolean {
+  return canReopenIssue(settings.unlockRestriction, issueUnlockFacts(issue, user));
 }
 
 /**
  * Makes the text that tells the user why the rule rejects the change.
  *
  * A change from one resolved state to a different resolved state keeps the
- * ticket locked. The message tells the user the two steps to do instead.
+ * issue locked. The message tells the user the two steps to do instead.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @param changes The changes in the transaction.
  * @returns The message for the user.
  */
 function blockMessage(issue: IssueEntity, changes: ChangeSet): string {
   const blocked = changes.fields.concat(changes.parts);
-  let text = 'Ticket ' + issue.id + ' is resolved and locked. You cannot change these: ' +
-    blocked.join(', ') + '. Reopen the ticket first.';
+  let text = 'Issue ' + issue.id + ' is resolved and locked. You cannot change these: ' +
+    blocked.join(', ') + '. Reopen the issue first.';
   if (changes.resolvingField !== null) {
-    text += ' To change the resolution, reopen the ticket, then resolve it again.';
+    text += ' To change the resolution, reopen the issue, then resolve it again.';
   }
   return text;
 }
@@ -214,7 +214,7 @@ function blockMessage(issue: IssueEntity, changes: ChangeSet): string {
 /**
  * Tells if the transaction adds, changes or removes a work item.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @returns True if a work item changes.
  */
 function workItemsChanged(issue: IssueEntity): boolean {
@@ -232,7 +232,7 @@ function workItemsChanged(issue: IssueEntity): boolean {
  * estimation. The rule cannot tell which period field YouTrack calculates, so
  * it lets each period field through in this one case.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @param project The project that holds the settings.
  * @param settings The settings of the project.
  * @returns The changed fields, the resolving field and the blocked parts.
@@ -240,7 +240,7 @@ function workItemsChanged(issue: IssueEntity): boolean {
 function collectChanges(
   issue: IssueEntity,
   project: ProjectEntity,
-  settings: TicketLockSettings
+  settings: IssueLockSettings
 ): ChangeSet {
   const found = collectChangedFields(issue, project);
   const keepPeriod = settings.allowWorkItems && workItemsChanged(issue);
@@ -260,38 +260,38 @@ function collectChanges(
 }
 
 /**
- * Checks a transaction that reopens a locked ticket.
+ * Checks a transaction that reopens a locked issue.
  *
  * The reopen must be alone. The transaction can change the resolving field
  * and the parts that the settings permit. It cannot change another field.
  *
- * @param issue The ticket that changes.
+ * @param issue The issue that changes.
  * @param settings The settings of the project.
  * @param user The user that makes the change.
  * @param changes The changes in the transaction.
  */
 function checkReopen(
   issue: IssueEntity,
-  settings: TicketLockSettings,
+  settings: IssueLockSettings,
   user: UserEntity,
   changes: ChangeSet
 ): void {
   check(
     canReopen(settings, user, issue),
-    'You cannot reopen ticket ' + issue.id + '. ' + reopenRule(settings.unlockRestriction)
+    'You cannot reopen issue ' + issue.id + '. ' + reopenRule(settings.unlockRestriction)
   );
 
   const extraFields = changes.fields.filter(name => name !== changes.resolvingField);
   const extra = extraFields.concat(changes.parts);
   check(
     extra.length === 0,
-    'Reopen ticket ' + issue.id + ' alone. Remove these changes: ' + extra.join(', ') +
-      '. Then edit the ticket.'
+    'Reopen issue ' + issue.id + ' alone. Remove these changes: ' + extra.join(', ') +
+      '. Then edit the issue.'
   );
 }
 
 export const rule = Issue.onChange({
-  title: 'Lock a resolved ticket',
+  title: 'Lock a resolved issue',
 
   guard(ctx) {
     const issue = ctx.issue;

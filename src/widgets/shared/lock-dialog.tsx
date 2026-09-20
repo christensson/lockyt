@@ -19,7 +19,7 @@ export type LockDialogProps = {
 };
 
 /**
- * The dialog that tells what a lock permits on a ticket or an article.
+ * The dialog that tells what a lock permits on an issue or an article.
  *
  * The dialog has a title, three short lists and a Close button.
  */

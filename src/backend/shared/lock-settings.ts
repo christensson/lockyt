@@ -5,17 +5,17 @@
  * property of the project. The workflow rules, the HTTP handlers and the
  * configuration widget all use this module.
  *
- * The stored shape is `{ version: 1, ticket: {...}, article: {...} }`.
+ * The stored shape is `{ version: 1, issue: {...}, article: {...} }`.
  *
  * This module has no run-time imports. The build puts it in a shared chunk
  * that the workflow rules and the HTTP handlers load at run time.
  */
-import type { ArticleUnlockRestriction, TicketUnlockRestriction } from './permissions';
+import type { ArticleUnlockRestriction, IssueUnlockRestriction } from './permissions';
 
-/** The lock settings for tickets. */
-export type TicketLockSettings = {
+/** The lock settings for issues. */
+export type IssueLockSettings = {
   enabled: boolean;
-  unlockRestriction: TicketUnlockRestriction;
+  unlockRestriction: IssueUnlockRestriction;
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;
@@ -36,7 +36,7 @@ export type ArticleLockSettings = {
 /** The lock settings of one project. */
 export type LockSettings = {
   version: number;
-  ticket: TicketLockSettings;
+  issue: IssueLockSettings;
   article: ArticleLockSettings;
 };
 
@@ -50,8 +50,8 @@ export function settingsVersion(): number {
   return 1;
 }
 
-/** The permitted values of the ticket `unlockRestriction`. */
-export function ticketUnlockRestrictions(): TicketUnlockRestriction[] {
+/** The permitted values of the issue `unlockRestriction`. */
+export function issueUnlockRestrictions(): IssueUnlockRestriction[] {
   return ["anyone", "reporter", "resolver", "reporterOrResolver", "projectAdmins"];
 }
 
@@ -60,8 +60,8 @@ export function articleUnlockRestrictions(): ArticleUnlockRestriction[] {
   return ["anyone", "author", "lockedBy", "authorOrLockedBy", "projectAdmins"];
 }
 
-/** The ticket settings for a project that an admin did not configure. */
-export function defaultTicketSettings(): TicketLockSettings {
+/** The issue settings for a project that an admin did not configure. */
+export function defaultIssueSettings(): IssueLockSettings {
   return {
     enabled: true,
     unlockRestriction: "anyone",
@@ -89,13 +89,13 @@ export function defaultArticleSettings(): ArticleLockSettings {
 export function defaultLockSettings(): LockSettings {
   return {
     version: settingsVersion(),
-    ticket: defaultTicketSettings(),
+    issue: defaultIssueSettings(),
     article: defaultArticleSettings()
   };
 }
 
-/** The names of the boolean ticket settings. */
-export function ticketBooleanKeys(): string[] {
+/** The names of the boolean issue settings. */
+export function issueBooleanKeys(): string[] {
   return ["enabled", "allowComments", "allowLinks", "allowWorkItems", "allowAttachments", "allowTags"];
 }
 
@@ -216,19 +216,19 @@ export function parseLockSettings(raw: unknown): LockSettings {
   }
   return {
     version: settingsVersion(),
-    ticket: parseSection(source.ticket, defaultTicketSettings(), ticketBooleanKeys(), ticketUnlockRestrictions()),
+    issue: parseSection(source.issue, defaultIssueSettings(), issueBooleanKeys(), issueUnlockRestrictions()),
     article: parseSection(source.article, defaultArticleSettings(), articleBooleanKeys(), articleUnlockRestrictions())
   };
 }
 
 /**
- * Checks ticket settings that come from the user.
+ * Checks issue settings that come from the user.
  *
  * @param input The value that the user sent.
  * @returns The accepted settings, or the list of errors.
  */
-export function validateTicketSettings(input: unknown): ValidationResult<TicketLockSettings> {
-  return validateSection(input, defaultTicketSettings(), ticketBooleanKeys(), ticketUnlockRestrictions());
+export function validateIssueSettings(input: unknown): ValidationResult<IssueLockSettings> {
+  return validateSection(input, defaultIssueSettings(), issueBooleanKeys(), issueUnlockRestrictions());
 }
 
 /**
@@ -269,23 +269,23 @@ export function readProjectLockSettings(project: unknown): LockSettings {
 }
 
 /**
- * Checks and keeps the ticket section of the settings of a project.
+ * Checks and keeps the issue section of the settings of a project.
  *
- * The function reads the stored settings, replaces the ticket section, and
+ * The function reads the stored settings, replaces the issue section, and
  * writes the full settings back. The article section stays as it is, in its
  * normalized form.
  *
  * @param project The project.
- * @param input The ticket settings that the user sent.
+ * @param input The issue settings that the user sent.
  * @returns The accepted settings, or the list of errors.
  */
-export function saveTicketSettings(project: unknown, input: unknown): ValidationResult<TicketLockSettings> {
-  const checked = validateTicketSettings(input);
+export function saveIssueSettings(project: unknown, input: unknown): ValidationResult<IssueLockSettings> {
+  const checked = validateIssueSettings(input);
   if (!checked.ok) {
     return checked;
   }
   const current = readProjectLockSettings(project);
-  current.ticket = checked.value;
+  current.issue = checked.value;
   (project as ProjectProbe).extensionProperties.settings = serializeLockSettings(current);
   return checked;
 }

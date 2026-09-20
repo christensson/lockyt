@@ -1,28 +1,28 @@
 /**
- * The lock state of a ticket, as the `issue/lock` HTTP handler sends it, and
- * the facts that decide who can reopen a ticket.
+ * The lock state of an issue, as the `issue/lock` HTTP handler sends it, and
+ * the facts that decide who can reopen an issue.
  *
  * The handler file contains only `handle`, because the build merges helper
  * functions from all the handler files of one scope into one bundle. The
- * workflow rule that locks a ticket uses `ticketUnlockFacts` too, so that the
+ * workflow rule that locks an issue uses `issueUnlockFacts` too, so that the
  * rule and the widget never disagree about who can reopen.
  *
- * The rule `record-ticket-resolver` writes the `resolvedBy` and `resolvedAt`
- * extension properties of the ticket. This module only reads them.
+ * The rule `record-issue-resolver` writes the `resolvedBy` and `resolvedAt`
+ * extension properties of the issue. This module only reads them.
  */
 import type {
   Issue as IssueEntity,
   User as UserEntity
 } from '@jetbrains/youtrack-workflow-types/workflowTypeScriptStubs';
 import { readProjectLockSettings } from './lock-settings';
-import type { TicketUnlockFacts, TicketUnlockRestriction } from './permissions';
-import { canReopenTicket, isProjectAdmin } from './permissions';
+import type { IssueUnlockFacts, IssueUnlockRestriction } from './permissions';
+import { canReopenIssue, isProjectAdmin } from './permissions';
 
-/** The lock state of a ticket, flat. */
-export type TicketLockState = {
+/** The lock state of an issue, flat. */
+export type IssueLockState = {
   isResolved: boolean;
   enabled: boolean;
-  unlockRestriction: TicketUnlockRestriction;
+  unlockRestriction: IssueUnlockRestriction;
   allowComments: boolean;
   allowLinks: boolean;
   allowWorkItems: boolean;
@@ -44,7 +44,7 @@ type UserProbe = {
   visibleName?: string;
 };
 
-/** The extension properties of a ticket, without a fixed type. */
+/** The extension properties of an issue, without a fixed type. */
 type Props = Record<string, unknown>;
 
 function props(issue: IssueEntity): Props {
@@ -67,50 +67,50 @@ function readNumber(value: unknown): number {
 }
 
 /**
- * Reads the user who resolved the ticket.
+ * Reads the user who resolved the issue.
  *
  * A reference to a removed user can throw. The function then returns null.
  *
- * @param issue The ticket.
+ * @param issue The issue.
  * @returns The user, or null if the app does not know.
  */
-export function readTicketResolver(issue: IssueEntity): UserProbe | null {
+export function readIssueResolver(issue: IssueEntity): UserProbe | null {
   try {
     const value = props(issue).resolvedBy;
     if (value && typeof value === 'object') {
       return value as UserProbe;
     }
   } catch (error) {
-    console.warn('[ticket-lock] Cannot read resolvedBy: ' + String(error));
+    console.warn('[issue-lock] Cannot read resolvedBy: ' + String(error));
   }
   return null;
 }
 
 /**
- * Reads the moment when the ticket became resolved, as the app recorded it.
+ * Reads the moment when the issue became resolved, as the app recorded it.
  *
- * @param issue The ticket.
+ * @param issue The issue.
  * @returns Milliseconds since 1970-01-01T00:00Z, or 0 if the app does not know.
  */
-export function readTicketResolvedAt(issue: IssueEntity): number {
+export function readIssueResolvedAt(issue: IssueEntity): number {
   try {
     return readNumber(props(issue).resolvedAt);
   } catch (error) {
-    console.warn('[ticket-lock] Cannot read resolvedAt: ' + String(error));
+    console.warn('[issue-lock] Cannot read resolvedAt: ' + String(error));
     return 0;
   }
 }
 
 /**
- * Collects the facts about a user that decide if the user can reopen a ticket.
+ * Collects the facts about a user that decide if the user can reopen an issue.
  *
- * @param issue The ticket.
+ * @param issue The issue.
  * @param user The user who asks, or who makes the change.
  * @returns The facts.
  */
-export function ticketUnlockFacts(issue: IssueEntity, user: UserEntity): TicketUnlockFacts {
+export function issueUnlockFacts(issue: IssueEntity, user: UserEntity): IssueUnlockFacts {
   const reporter = issue.reporter as unknown as UserProbe | null;
-  const resolver = readTicketResolver(issue);
+  const resolver = readIssueResolver(issue);
   const me = user as unknown as UserProbe;
   return {
     isAdmin: isProjectAdmin(user, issue.project),
@@ -120,38 +120,38 @@ export function ticketUnlockFacts(issue: IssueEntity, user: UserEntity): TicketU
 }
 
 /**
- * Tells who can reopen a locked ticket, in one sentence, for a message.
+ * Tells who can reopen a locked issue, in one sentence, for a message.
  *
  * @param restriction The setting of the project.
  * @returns One sentence.
  */
-export function reopenRule(restriction: TicketUnlockRestriction): string {
+export function reopenRule(restriction: IssueUnlockRestriction): string {
   if (restriction === 'reporter') {
-    return 'Only the reporter or a project admin can reopen this ticket.';
+    return 'Only the reporter or a project admin can reopen this issue.';
   }
   if (restriction === 'resolver') {
-    return 'Only the user who resolved the ticket or a project admin can reopen it.';
+    return 'Only the user who resolved the issue or a project admin can reopen it.';
   }
   if (restriction === 'reporterOrResolver') {
-    return 'Only the reporter, the user who resolved the ticket or a project admin can reopen it.';
+    return 'Only the reporter, the user who resolved the issue or a project admin can reopen it.';
   }
   if (restriction === 'projectAdmins') {
-    return 'Only a project admin can reopen this ticket.';
+    return 'Only a project admin can reopen this issue.';
   }
-  return 'Each user who can update this ticket can reopen it.';
+  return 'Each user who can update this issue can reopen it.';
 }
 
 /**
- * Reads the lock state of a ticket for the current user.
+ * Reads the lock state of an issue for the current user.
  *
- * @param issue The ticket.
+ * @param issue The issue.
  * @param user The user who asks.
- * @returns The state, the settings, and if the user can reopen the ticket.
+ * @returns The state, the settings, and if the user can reopen the issue.
  */
-export function readTicketLockState(issue: IssueEntity, user: UserEntity): TicketLockState {
-  const settings = readProjectLockSettings(issue.project).ticket;
+export function readIssueLockState(issue: IssueEntity, user: UserEntity): IssueLockState {
+  const settings = readProjectLockSettings(issue.project).issue;
   const reporter = issue.reporter as unknown as UserProbe | null;
-  const resolver = readTicketResolver(issue);
+  const resolver = readIssueResolver(issue);
   const me = user as unknown as UserProbe;
 
   return {
@@ -167,8 +167,8 @@ export function readTicketLockState(issue: IssueEntity, user: UserEntity): Ticke
     reporterName: nameOf(reporter),
     resolverLogin: loginOf(resolver),
     resolverName: nameOf(resolver),
-    resolvedAt: readTicketResolvedAt(issue),
+    resolvedAt: readIssueResolvedAt(issue),
     currentUserLogin: me.login || '',
-    canReopen: canReopenTicket(settings.unlockRestriction, ticketUnlockFacts(issue, user))
+    canReopen: canReopenIssue(settings.unlockRestriction, issueUnlockFacts(issue, user))
   };
 }

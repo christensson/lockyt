@@ -51,6 +51,54 @@ export const articleSettingsResSchema = z.object({
   allowChildArticles: z.boolean(),
 });
 
+export const issueLockReqSchema = z.object({
+  refresh: z.boolean().optional(),
+});
+
+export const issueLockResSchema = z.object({
+  isResolved: z.boolean(),
+  enabled: z.boolean(),
+  unlockRestriction: z.union([
+    z.literal("anyone"),
+    z.literal("reporter"),
+    z.literal("resolver"),
+    z.literal("reporterOrResolver"),
+    z.literal("projectAdmins"),
+  ]),
+  allowComments: z.boolean(),
+  allowLinks: z.boolean(),
+  allowWorkItems: z.boolean(),
+  allowAttachments: z.boolean(),
+  allowTags: z.boolean(),
+  reporterLogin: z.string(),
+  reporterName: z.string(),
+  resolverLogin: z.string(),
+  resolverName: z.string(),
+  resolvedAt: z.number(),
+  currentUserLogin: z.string(),
+  canReopen: z.boolean(),
+});
+
+export const issueSettingsReqSchema = z.object({
+  projectId: z.string(),
+});
+
+export const issueSettingsResSchema = z.object({
+  enabled: z.boolean(),
+  unlockRestriction: z.union([
+    z.literal("anyone"),
+    z.literal("reporter"),
+    z.literal("resolver"),
+    z.literal("reporterOrResolver"),
+    z.literal("projectAdmins"),
+  ]),
+  allowComments: z.boolean(),
+  allowLinks: z.boolean(),
+  allowWorkItems: z.boolean(),
+  allowAttachments: z.boolean(),
+  allowTags: z.boolean(),
+});
+
 export const saveArticleSettingsReqSchema = z.object({
   projectId: z.string(),
   enabled: z.boolean(),
@@ -84,7 +132,7 @@ export const saveArticleSettingsResSchema = z.object({
   allowChildArticles: z.boolean(),
 });
 
-export const saveTicketSettingsReqSchema = z.object({
+export const saveIssueSettingsReqSchema = z.object({
   projectId: z.string(),
   enabled: z.boolean(),
   unlockRestriction: z.union([
@@ -101,7 +149,7 @@ export const saveTicketSettingsReqSchema = z.object({
   allowTags: z.boolean(),
 });
 
-export const saveTicketSettingsResSchema = z.object({
+export const saveIssueSettingsResSchema = z.object({
   ok: z.boolean(),
   errors: z.array(z.string()),
   enabled: z.boolean(),
@@ -152,54 +200,6 @@ export const setArticleLockResSchema = z.object({
   allowChildArticles: z.boolean(),
 });
 
-export const ticketLockReqSchema = z.object({
-  refresh: z.boolean().optional(),
-});
-
-export const ticketLockResSchema = z.object({
-  isResolved: z.boolean(),
-  enabled: z.boolean(),
-  unlockRestriction: z.union([
-    z.literal("anyone"),
-    z.literal("reporter"),
-    z.literal("resolver"),
-    z.literal("reporterOrResolver"),
-    z.literal("projectAdmins"),
-  ]),
-  allowComments: z.boolean(),
-  allowLinks: z.boolean(),
-  allowWorkItems: z.boolean(),
-  allowAttachments: z.boolean(),
-  allowTags: z.boolean(),
-  reporterLogin: z.string(),
-  reporterName: z.string(),
-  resolverLogin: z.string(),
-  resolverName: z.string(),
-  resolvedAt: z.number(),
-  currentUserLogin: z.string(),
-  canReopen: z.boolean(),
-});
-
-export const ticketSettingsReqSchema = z.object({
-  projectId: z.string(),
-});
-
-export const ticketSettingsResSchema = z.object({
-  enabled: z.boolean(),
-  unlockRestriction: z.union([
-    z.literal("anyone"),
-    z.literal("reporter"),
-    z.literal("resolver"),
-    z.literal("reporterOrResolver"),
-    z.literal("projectAdmins"),
-  ]),
-  allowComments: z.boolean(),
-  allowLinks: z.boolean(),
-  allowWorkItems: z.boolean(),
-  allowAttachments: z.boolean(),
-  allowTags: z.boolean(),
-});
-
 // Nested schema object for validation system
 export const schema = {
   article: {
@@ -217,8 +217,8 @@ export const schema = {
   issue: {
     lock: {
       GET: {
-        Req: ticketLockReqSchema,
-        Res: ticketLockResSchema
+        Req: issueLockReqSchema,
+        Res: issueLockResSchema
       }
     }
   },
@@ -233,14 +233,14 @@ export const schema = {
         Res: saveArticleSettingsResSchema
       }
     },
-    ticketSettings: {
+    issueSettings: {
       GET: {
-        Req: ticketSettingsReqSchema,
-        Res: ticketSettingsResSchema
+        Req: issueSettingsReqSchema,
+        Res: issueSettingsResSchema
       },
       POST: {
-        Req: saveTicketSettingsReqSchema,
-        Res: saveTicketSettingsResSchema
+        Req: saveIssueSettingsReqSchema,
+        Res: saveIssueSettingsResSchema
       }
     }
   }

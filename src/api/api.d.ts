@@ -4,8 +4,8 @@ import * as articleLockPOSTHandler from "../backend/router/article/lock/POST";
 import * as issueLockGETHandler from "../backend/router/issue/lock/GET";
 import * as projectArticleSettingsGETHandler from "../backend/router/project/articleSettings/GET";
 import * as projectArticleSettingsPOSTHandler from "../backend/router/project/articleSettings/POST";
-import * as projectTicketSettingsGETHandler from "../backend/router/project/ticketSettings/GET";
-import * as projectTicketSettingsPOSTHandler from "../backend/router/project/ticketSettings/POST";
+import * as projectIssueSettingsGETHandler from "../backend/router/project/issueSettings/GET";
+import * as projectIssueSettingsPOSTHandler from "../backend/router/project/issueSettings/POST";
 
 export type ApiRouter = {
     article: {
@@ -24,9 +24,9 @@ export type ApiRouter = {
             GET: ExtractRPCFromHandler<projectArticleSettingsGETHandler.Handle>;
             POST: ExtractRPCFromHandler<projectArticleSettingsPOSTHandler.Handle>;
         };
-        ticketSettings: {
-            GET: ExtractRPCFromHandler<projectTicketSettingsGETHandler.Handle>;
-            POST: ExtractRPCFromHandler<projectTicketSettingsPOSTHandler.Handle>;
+        issueSettings: {
+            GET: ExtractRPCFromHandler<projectIssueSettingsGETHandler.Handle>;
+            POST: ExtractRPCFromHandler<projectIssueSettingsPOSTHandler.Handle>;
         };
     };
 };

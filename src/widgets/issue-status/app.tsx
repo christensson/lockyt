@@ -4,7 +4,7 @@ import Icon from '@jetbrains/ring-ui-built/components/icon/icon';
 import infoIcon from '@jetbrains/icons/info';
 import lockIcon from '@jetbrains/icons/lock';
 import {createApi} from '@/api';
-import type {TicketLockRes} from '@/backend/router/issue/lock/GET';
+import type {IssueLockRes} from '@/backend/router/issue/lock/GET';
 import {LockDialog} from '../shared/lock-dialog';
 import {useModalFrame} from '../shared/use-modal-frame';
 import {isoTime, relativeTime} from '../shared/relative-time';
@@ -19,12 +19,12 @@ const api = createApi(host);
 type Mode = 'view' | 'info' | 'message';
 
 /**
- * The status text of a locked ticket. It names the user who resolved the
- * ticket and tells when, if the app recorded them.
+ * The status text of a locked issue. It names the user who resolved the
+ * issue and tells when, if the app recorded them.
  */
-function StatusLine({state}: {state: TicketLockRes}): React.ReactElement {
+function StatusLine({state}: {state: IssueLockRes}): React.ReactElement {
   if (state.resolvedAt <= 0) {
-    return <span>{'Ticket locked.'}</span>;
+    return <span>{'Issue locked.'}</span>;
   }
   const who = state.resolverName || 'an unknown user';
   // The tooltip is the native one of the browser. A Ring UI tooltip is a
@@ -41,22 +41,22 @@ function StatusLine({state}: {state: TicketLockRes}): React.ReactElement {
 }
 
 /**
- * The dialog that tells what the lock permits on this ticket.
+ * The dialog that tells what the lock permits on this issue.
  */
-function InfoDialog({state, onClose}: {state: TicketLockRes; onClose: () => void}): React.ReactElement {
+function InfoDialog({state, onClose}: {state: IssueLockRes; onClose: () => void}): React.ReactElement {
   const footnote = state.resolvedAt > 0
     ? 'Resolved by ' + (state.resolverName || 'an unknown user') + ' on ' + isoTime(state.resolvedAt) + '.'
     : undefined;
   if (!state.enabled) {
     return (
       <LockDialog
-        title="The lock for tickets is off"
-        intro="The lock for tickets is off in this project. A resolved ticket stays editable."
+        title="The lock for issues is off"
+        intro="The lock for issues is off in this project. A resolved issue stays editable."
         blockedTitle="Not permitted when the lock is on"
         blocked={blockedSentences(state)}
         permittedTitle="Permitted when the lock is on"
         permitted={permittedSentences(state)}
-        whoTitle="Who can reopen a locked ticket"
+        whoTitle="Who can reopen a locked issue"
         who={[whoCanReopen(state)]}
         onClose={onClose}
       />
@@ -64,8 +64,8 @@ function InfoDialog({state, onClose}: {state: TicketLockRes; onClose: () => void
   }
   return (
     <LockDialog
-      title="This ticket is locked"
-      intro="The ticket is resolved. A resolved ticket is read-only."
+      title="This issue is locked"
+      intro="The issue is resolved. A resolved issue is read-only."
       blockedTitle="Not permitted"
       blocked={blockedSentences(state)}
       permittedTitle="Permitted"
@@ -79,13 +79,13 @@ function InfoDialog({state, onClose}: {state: TicketLockRes; onClose: () => void
 }
 
 const AppComponent: React.FunctionComponent = () => {
-  const [state, setState] = useState<TicketLockRes | null>(null);
+  const [state, setState] = useState<IssueLockRes | null>(null);
   const [mode, setMode] = useState<Mode>('view');
   const [message, setMessage] = useState('');
 
   const load = useCallback(() => {
     api.issue.lock.GET({})
-      .then(result => { setState(result as TicketLockRes); })
+      .then(result => { setState(result as IssueLockRes); })
       .catch((cause: unknown) => {
         setMessage('The app cannot read the lock state: ' + String(cause));
         setMode('message');
@@ -126,13 +126,13 @@ const AppComponent: React.FunctionComponent = () => {
         </>
       )}
 
-      {mode === 'view' && !state.enabled && <span>{'Ticket locks are disabled in this project.'}</span>}
+      {mode === 'view' && !state.enabled && <span>{'Issue locks are disabled in this project.'}</span>}
 
       <Button
         inline
         icon={infoIcon}
-        title="Show what is permitted on this ticket"
-        aria-label="Show what is permitted on this ticket"
+        title="Show what is permitted on this issue"
+        aria-label="Show what is permitted on this issue"
         onClick={() => setMode('info')}
       />
     </div>

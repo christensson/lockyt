@@ -36,11 +36,11 @@
       "properties": {
         "resolvedBy": {
           "type": "User",
-          "description": "The user who resolved the ticket. Set by the workflow rule when the ticket becomes resolved."
+          "description": "The user who resolved the issue. Set by the workflow rule when the issue becomes resolved."
         },
         "resolvedAt": {
           "type": "integer",
-          "description": "The timestamp in milliseconds indicating the moment when the ticket became resolved. Stored as a unix timestamp at UTC."
+          "description": "The timestamp in milliseconds indicating the moment when the issue became resolved. Stored as a unix timestamp at UTC."
         }
       }
     }

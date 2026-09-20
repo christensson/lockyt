@@ -5,20 +5,20 @@
  * that the rules and the handlers load at run time.
  */
 
-/** The users who can move a locked ticket back to an unresolved state. */
-export type TicketUnlockRestriction =
+/** The users who can move a locked issue back to an unresolved state. */
+export type IssueUnlockRestriction =
   | "anyone"
   | "reporter"
   | "resolver"
   | "reporterOrResolver"
   | "projectAdmins";
 
-/** The facts about the current user that decide a reopen of a ticket. */
-export type TicketUnlockFacts = {
+/** The facts about the current user that decide a reopen of an issue. */
+export type IssueUnlockFacts = {
   isAdmin: boolean;
-  /** True if the current user created the ticket. */
+  /** True if the current user created the issue. */
   isReporter: boolean;
-  /** True if the current user is the user who resolved the ticket. */
+  /** True if the current user is the user who resolved the issue. */
   isResolver: boolean;
 };
 
@@ -156,17 +156,17 @@ export function canLockArticle(restriction: ArticleUnlockRestriction, facts: Loc
 }
 
 /**
- * Tells if a user can move a locked ticket back to an unresolved state.
+ * Tells if a user can move a locked issue back to an unresolved state.
  *
- * A project admin can always reopen a ticket. If the app does not know who
- * resolved the ticket, the check fails closed: under `resolver` only an admin
+ * A project admin can always reopen an issue. If the app does not know who
+ * resolved the issue, the check fails closed: under `resolver` only an admin
  * can reopen, and under `reporterOrResolver` only the reporter or an admin.
  *
  * @param restriction The setting of the project.
  * @param facts The facts about the user.
- * @returns True if the user can reopen the ticket.
+ * @returns True if the user can reopen the issue.
  */
-export function canReopenTicket(restriction: TicketUnlockRestriction, facts: TicketUnlockFacts): boolean {
+export function canReopenIssue(restriction: IssueUnlockRestriction, facts: IssueUnlockFacts): boolean {
   if (facts.isAdmin) {
     return true;
   }

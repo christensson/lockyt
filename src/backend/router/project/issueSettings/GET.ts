@@ -4,14 +4,14 @@ import { readProjectLockSettings } from '@/backend/shared/lock-settings';
 /**
  * @zod-to-schema
  */
-export type TicketSettingsReq = {
+export type IssueSettingsReq = {
   projectId: string;
 };
 
 /**
  * @zod-to-schema
  */
-export type TicketSettingsRes = {
+export type IssueSettingsRes = {
   enabled: boolean;
   unlockRestriction: "anyone" | "reporter" | "resolver" | "reporterOrResolver" | "projectAdmins";
   allowComments: boolean;
@@ -22,13 +22,13 @@ export type TicketSettingsRes = {
 };
 
 /**
- * Reads the ticket lock settings of the project.
+ * Reads the issue lock settings of the project.
  *
  * The client sends `projectId` to select the project, then removes it before
  * the request comes to this handler. Use `ctx.project`.
  */
-function handle(ctx: CtxGet<TicketSettingsRes, TicketSettingsReq, "project">): void {
-  ctx.response.json(readProjectLockSettings(ctx.project).ticket);
+function handle(ctx: CtxGet<IssueSettingsRes, IssueSettingsReq, "project">): void {
+  ctx.response.json(readProjectLockSettings(ctx.project).issue);
 }
 
 export default withPermissions(handle, ['UPDATE_PROJECT']);

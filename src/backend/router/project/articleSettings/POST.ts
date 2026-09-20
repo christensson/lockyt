@@ -32,7 +32,7 @@ export type SaveArticleSettingsRes = {
  * Keeps the article lock settings of the project.
  *
  * The handler checks the settings before it keeps them. If a setting is bad,
- * the handler answers with code 400 and the list of errors. The ticket
+ * the handler answers with code 400 and the list of errors. The issue
  * section of the settings stays as it is.
  */
 function handle(ctx: CtxPost<SaveArticleSettingsReq, SaveArticleSettingsRes, never, "project">): void {

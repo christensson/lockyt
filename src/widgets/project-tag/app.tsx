@@ -5,8 +5,8 @@ import Loader from '@jetbrains/ring-ui-built/components/loader/loader';
 import Select from '@jetbrains/ring-ui-built/components/select/select';
 import Text from '@jetbrains/ring-ui-built/components/text/text';
 import {createApi} from '@/api';
-import {defaultArticleSettings, defaultTicketSettings} from '@/backend/shared/lock-settings';
-import type {ArticleLockSettings, TicketLockSettings} from '@/backend/shared/lock-settings';
+import {defaultArticleSettings, defaultIssueSettings} from '@/backend/shared/lock-settings';
+import type {ArticleLockSettings, IssueLockSettings} from '@/backend/shared/lock-settings';
 
 const host = await YTApp.register();
 const api = createApi(host);
@@ -39,35 +39,35 @@ type SectionValue<R extends string> = {
   unlockRestriction: R;
 };
 
-const TICKET_RESTRICTIONS: RestrictionItem<TicketLockSettings['unlockRestriction']>[] = [
+const ISSUE_RESTRICTIONS: RestrictionItem<IssueLockSettings['unlockRestriction']>[] = [
   {
     key: 'anyone',
     label: 'Anyone with update access',
-    description: 'Each user who can update the ticket can also reopen it.'
+    description: 'Each user who can update the issue can also reopen it.'
   },
   {
     key: 'reporter',
     label: 'The reporter',
-    description: 'Only the reporter or a project admin can reopen the ticket.'
+    description: 'Only the reporter or a project admin can reopen the issue.'
   },
   {
     key: 'resolver',
-    label: 'The user who resolved the ticket',
-    description: 'Only the user who resolved the ticket or a project admin can reopen it.'
+    label: 'The user who resolved the issue',
+    description: 'Only the user who resolved the issue or a project admin can reopen it.'
   },
   {
     key: 'reporterOrResolver',
-    label: 'The reporter or the user who resolved the ticket',
-    description: 'The reporter, the user who resolved the ticket or a project admin can reopen it.'
+    label: 'The reporter or the user who resolved the issue',
+    description: 'The reporter, the user who resolved the issue or a project admin can reopen it.'
   },
   {
     key: 'projectAdmins',
     label: 'Project admins only',
-    description: 'Only a project admin can reopen the ticket.'
+    description: 'Only a project admin can reopen the issue.'
   }
 ];
 
-const TICKET_TOGGLES: ToggleItem<TicketLockSettings>[] = [
+const ISSUE_TOGGLES: ToggleItem<IssueLockSettings>[] = [
   {key: 'allowComments', label: 'Comments'},
   {key: 'allowLinks', label: 'Links'},
   {key: 'allowWorkItems', label: 'Work items (logged time)'},
@@ -137,7 +137,7 @@ type SectionProps<T extends SectionValue<R>, R extends string> = {
 };
 
 /**
- * One section of the settings: the lock for tickets, or the lock for articles.
+ * One section of the settings: the lock for issues, or the lock for articles.
  *
  * The section only shows and changes the value. The parent component reads
  * and keeps the settings of both sections.
@@ -190,11 +190,11 @@ function LockSection<T extends SectionValue<R>, R extends string>(props: Section
   );
 }
 
-const loadTicket = (id: string): Promise<TicketLockSettings> =>
-  api.project.ticketSettings.GET({projectId: id}) as Promise<TicketLockSettings>;
+const loadIssue = (id: string): Promise<IssueLockSettings> =>
+  api.project.issueSettings.GET({projectId: id}) as Promise<IssueLockSettings>;
 
-const saveTicket = (id: string, value: TicketLockSettings): Promise<SaveResult> =>
-  api.project.ticketSettings.POST({projectId: id, ...value});
+const saveIssue = (id: string, value: IssueLockSettings): Promise<SaveResult> =>
+  api.project.issueSettings.POST({projectId: id, ...value});
 
 const loadArticle = (id: string): Promise<ArticleLockSettings> =>
   api.project.articleSettings.GET({projectId: id}) as Promise<ArticleLockSettings>;
@@ -205,10 +205,10 @@ const saveArticle = (id: string, value: ArticleLockSettings): Promise<SaveResult
 /**
  * Joins the errors of the two saves, with the name of the section in front.
  */
-function joinErrors(ticket: SaveResult, article: SaveResult): string {
+function joinErrors(issue: SaveResult, article: SaveResult): string {
   const parts: string[] = [];
-  if (!ticket.ok) {
-    parts.push('Tickets: ' + ticket.errors.join(' '));
+  if (!issue.ok) {
+    parts.push('Issues: ' + issue.errors.join(' '));
   }
   if (!article.ok) {
     parts.push('Articles: ' + article.errors.join(' '));
@@ -217,7 +217,7 @@ function joinErrors(ticket: SaveResult, article: SaveResult): string {
 }
 
 const AppComponent: React.FunctionComponent = () => {
-  const [ticket, setTicket] = useState<TicketLockSettings>(defaultTicketSettings);
+  const [issue, setIssue] = useState<IssueLockSettings>(defaultIssueSettings);
   const [article, setArticle] = useState<ArticleLockSettings>(defaultArticleSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -231,18 +231,18 @@ const AppComponent: React.FunctionComponent = () => {
       setLoading(false);
       return;
     }
-    Promise.all([loadTicket(id), loadArticle(id)])
-      .then(([ticketValue, articleValue]) => {
-        setTicket(ticketValue);
+    Promise.all([loadIssue(id), loadArticle(id)])
+      .then(([issueValue, articleValue]) => {
+        setIssue(issueValue);
         setArticle(articleValue);
       })
       .catch((cause: unknown) => { setError('Cannot read the settings: ' + String(cause)); })
       .finally(() => { setLoading(false); });
   }, []);
 
-  const changeTicket = useCallback((key: keyof TicketLockSettings, next: unknown) => {
+  const changeIssue = useCallback((key: keyof IssueLockSettings, next: unknown) => {
     setSaved(false);
-    setTicket(previous => ({...previous, [key]: next}));
+    setIssue(previous => ({...previous, [key]: next}));
   }, []);
 
   const changeArticle = useCallback((key: keyof ArticleLockSettings, next: unknown) => {
@@ -259,18 +259,18 @@ const AppComponent: React.FunctionComponent = () => {
     setError('');
     setSaved(false);
     try {
-      const [ticketResult, articleResult] = await Promise.all([saveTicket(id, ticket), saveArticle(id, article)]);
-      if (ticketResult.ok && articleResult.ok) {
+      const [issueResult, articleResult] = await Promise.all([saveIssue(id, issue), saveArticle(id, article)]);
+      if (issueResult.ok && articleResult.ok) {
         setSaved(true);
       } else {
-        setError(joinErrors(ticketResult, articleResult));
+        setError(joinErrors(issueResult, articleResult));
       }
     } catch (cause: unknown) {
       setError('Cannot save the settings: ' + String(cause));
     } finally {
       setSaving(false);
     }
-  }, [ticket, article]);
+  }, [issue, article]);
 
   if (loading) {
     return <div className="widget"><Loader message="Reading settings..."/></div>;
@@ -279,17 +279,17 @@ const AppComponent: React.FunctionComponent = () => {
   return (
     <div className="widget">
       <LockSection
-        title="Tickets"
-        intro={'The app locks a ticket when the ticket becomes resolved. A locked ticket is read-only. ' +
-          'To edit a locked ticket, reopen it first.'}
-        enableLabel="Lock a resolved ticket"
-        restrictionTitle="Who can reopen a locked ticket"
-        restrictionNote="A project admin can always reopen a locked ticket."
-        restrictions={TICKET_RESTRICTIONS}
-        toggleTitle="What stays permitted on a locked ticket"
-        toggles={TICKET_TOGGLES}
-        value={ticket}
-        onChange={changeTicket}
+        title="Issues"
+        intro={'The app locks an issue when the issue becomes resolved. A locked issue is read-only. ' +
+          'To edit a locked issue, reopen it first.'}
+        enableLabel="Lock a resolved issue"
+        restrictionTitle="Who can reopen a locked issue"
+        restrictionNote="A project admin can always reopen a locked issue."
+        restrictions={ISSUE_RESTRICTIONS}
+        toggleTitle="What stays permitted on a locked issue"
+        toggles={ISSUE_TOGGLES}
+        value={issue}
+        onChange={changeIssue}
       />
       <LockSection
         title="Articles"
