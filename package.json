@@ -14,7 +14,7 @@
     "lint": "eslint --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix",
     "test": "echo 'no tests'",
-    "pack": "rm -rf lockyt.zip && npx --yes bestzip lockyt.zip dist/*",
+    "pack": "rm -rf lockyt.zip && cd dist/ && npx --yes bestzip ../lockyt.zip *",
     "upload": "youtrack-app app upload",
     "upload-local": "set -a && . ./.env && set +a && youtrack-app app upload --host $YOUTRACK_HOST --token $YOUTRACK_TOKEN",
     "update": "npm run build && npm run upload-local",
