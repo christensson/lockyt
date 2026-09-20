@@ -39,6 +39,11 @@ export type SetArticleLockRes = {
  *
  * A request that the rules reject gives code 200 with `ok: false` and a
  * message, so that the widget can show the message.
+ *
+ * The endpoint requires only `READ_ARTICLE`. The author of an article can
+ * edit it with `CREATE_ARTICLE` alone, and a static permission list cannot
+ * express "the author of this article". The handler decides who can edit,
+ * through `canEdit` in the state, and refuses everyone else before it writes.
  */
 function handle(ctx: CtxPost<SetArticleLockReq, SetArticleLockRes, never, "article">): void {
   const body = ctx.request.json();
@@ -48,5 +53,5 @@ function handle(ctx: CtxPost<SetArticleLockReq, SetArticleLockRes, never, "artic
   ctx.response.json({ ok: result.ok, message: result.message, ...result.state });
 }
 
-export default withPermissions(handle, ['UPDATE_ARTICLE']);
+export default withPermissions(handle, ['READ_ARTICLE']);
 export type Handle = typeof handle;

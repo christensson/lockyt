@@ -103,6 +103,10 @@ A user can always move a frozen article to a different parent article.
 **A user can freeze an article only if the same user can also unfreeze it.** Nobody can lock
 themselves out. A project admin can always freeze and unfreeze.
 
+**Edit access** means what YouTrack means by it: a project admin, a user with the Update Article
+permission in the project, or the author of the article with the Create Article permission. An
+author who can edit only their own articles can freeze and unfreeze those articles.
+
 | Who can unfreeze | Project admin | Author | Other editor |
 | --- | --- | --- | --- |
 | Anyone with edit access | Freeze and unfreeze | Freeze and unfreeze | Freeze and unfreeze |
@@ -129,7 +133,9 @@ counter starts at 0 and goes up by one each time a user freezes the article. Unf
   message names the parent article.
 - **The handler checks the project permission, not the article visibility.** A user who can
   update articles in the project, but who cannot see this article, can still freeze it through the
-  endpoint if the user knows the ID.
+  endpoint if the user knows the ID. The endpoint itself requires only the Read Article permission,
+  because YouTrack cannot express "the author of this article" as a static permission. The handler
+  refuses a user without edit access before it writes anything.
 - **The lock off leaves a frozen article frozen.** Unfreeze still works. Nothing else does.
 - **Two admins who save two settings sections at the same moment** write the same string. The
   window is milliseconds.

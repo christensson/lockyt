@@ -110,6 +110,30 @@ function nameOf(user: UserProbe | null): string {
 }
 
 /**
+ * Tells if a user can edit an article, as YouTrack sees it.
+ *
+ * YouTrack lets a user edit an article in three cases: the user is a project
+ * admin, the user has `UPDATE_ARTICLE` in the project, or the user created
+ * the article and has `CREATE_ARTICLE` in the project. The last case covers
+ * an author who cannot edit the articles of other users.
+ *
+ * @param article The article.
+ * @param user The user who asks.
+ * @param isAdmin True if the user is a project admin.
+ * @param isAuthor True if the user created the article.
+ * @returns True if the user can edit the article.
+ */
+function canEditArticle(article: ArticleEntity, user: UserEntity, isAdmin: boolean, isAuthor: boolean): boolean {
+  if (isAdmin) {
+    return true;
+  }
+  if (hasProjectPermission(user, 'UPDATE_ARTICLE', article.project)) {
+    return true;
+  }
+  return isAuthor && hasProjectPermission(user, 'CREATE_ARTICLE', article.project);
+}
+
+/**
  * Reads the freeze state of an article for the current user.
  *
  * @param article The article.
@@ -126,7 +150,7 @@ export function readArticleLockState(article: ArticleEntity, user: UserEntity): 
   const isAdmin = isProjectAdmin(user, article.project);
   const isAuthor = !!author && !!author.login && author.login === me.login;
   const isLocker = !!locker && !!locker.login && locker.login === me.login;
-  const canEdit = isAdmin || hasProjectPermission(user, 'UPDATE_ARTICLE', article.project);
+  const canEdit = canEditArticle(article, user, isAdmin, isAuthor);
   const isLocked = p.isLocked === true;
 
   return {
