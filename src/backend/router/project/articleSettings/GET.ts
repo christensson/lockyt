@@ -18,6 +18,7 @@ export type ArticleSettingsRes = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
 };
 
 /**

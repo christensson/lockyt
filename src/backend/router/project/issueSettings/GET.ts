@@ -19,6 +19,7 @@ export type IssueSettingsRes = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
 };
 
 /**

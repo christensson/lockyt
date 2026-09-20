@@ -72,7 +72,8 @@ const ISSUE_TOGGLES: ToggleItem<IssueLockSettings>[] = [
   {key: 'allowLinks', label: 'Links'},
   {key: 'allowWorkItems', label: 'Work items (logged time)'},
   {key: 'allowAttachments', label: 'Attachments'},
-  {key: 'allowTags', label: 'Tags'}
+  {key: 'allowTags', label: 'Tags'},
+  {key: 'allowDelete', label: 'Deletion'}
 ];
 
 const ARTICLE_RESTRICTIONS: RestrictionItem<ArticleLockSettings['unlockRestriction']>[] = [
@@ -107,7 +108,8 @@ const ARTICLE_TOGGLES: ToggleItem<ArticleLockSettings>[] = [
   {key: 'allowComments', label: 'Comments'},
   {key: 'allowChildArticles', label: 'Child articles (add or remove)'},
   {key: 'allowTags', label: 'Tags'},
-  {key: 'allowAttachments', label: 'Attachments'}
+  {key: 'allowAttachments', label: 'Attachments'},
+  {key: 'allowDelete', label: 'Deletion'}
 ];
 
 /**

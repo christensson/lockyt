@@ -14,6 +14,7 @@ export type LockDescription = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
   lockedByName: string;
   authorName: string;
   canLock: boolean;
@@ -40,6 +41,9 @@ export function permittedSentences(state: LockDescription): string[] {
   if (state.allowAttachments) {
     list.push('You can add and remove an attachment.');
   }
+  if (state.allowDelete) {
+    list.push('You can delete the article.');
+  }
   list.push('You can move the article to a different parent article.');
   return list;
 }
@@ -63,6 +67,9 @@ export function blockedSentences(state: LockDescription): string[] {
   }
   if (!state.allowAttachments) {
     list.push('You cannot add or remove an attachment.');
+  }
+  if (!state.allowDelete) {
+    list.push('You cannot delete the article. Unfreeze it first.');
   }
   return list;
 }

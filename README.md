@@ -24,6 +24,7 @@ the **Lock** tab, section **Issues**. These settings are available:
 | Work items | Permitted | Lets a user log time on a locked issue. |
 | Attachments | Not permitted | Lets a user add or remove an attachment on a locked issue. |
 | Tags | Not permitted | Lets a user add or remove a tag on a locked issue. |
+| Deletion | Not permitted | Lets a user delete a locked issue. |
 
 The app rejects each change that is not in the list above. This includes a custom field, the
 summary, the description, and the visibility.
@@ -52,6 +53,8 @@ issues is off, so that the data exists if an admin turns the lock on later.
   `The user who resolved the issue` only a project admin can reopen it. Under `The reporter or the
   user who resolved the issue` the reporter or a project admin can.
 - A reopen does not clear `resolvedBy` and `resolvedAt`. The next resolution overwrites them.
+- A locked issue cannot be deleted unless **Deletion** is permitted. Reopen the issue, then delete
+  it.
 
 ## Articles
 
@@ -76,6 +79,7 @@ the **Lock** tab, section **Articles**. These settings are available:
 | Child articles | Permitted | Lets a user add or remove a child article of a frozen article. |
 | Tags | Permitted | Lets a user add or remove a tag on a frozen article. |
 | Attachments | Not permitted | Lets a user add or remove an attachment on a frozen article. |
+| Deletion | Not permitted | Lets a user delete a frozen article. |
 
 The app rejects each other change to a frozen article: the title, the content and the visibility.
 A user can always move a frozen article to a different parent article.
@@ -111,13 +115,17 @@ author who can edit only their own articles can freeze and unfreeze those articl
 - **The lock off leaves a frozen article frozen.** Unfreeze still works. Nothing else does.
 - **Two admins who save two settings sections at the same moment** write the same string. The
   window is milliseconds.
-- Deletion, a move to a different project, the order of the rules, a bulk operation and an
-  integration account: the same limits as for issues.
+- **A frozen article cannot be deleted unless Deletion is permitted.** Unfreeze the article, then
+  delete it. YouTrack deletes the child articles with the parent, and the rule of each frozen child
+  runs too, so a frozen child also stops the deletion of its parent.
+- A move to a different project, the order of the rules, a bulk operation and an integration
+  account: the same limits as for issues.
 
 ## Known Limits
 
-- **The app does not stop a user from deleting an issue.** The rule does not run on removal. The
-  `DELETE_ISSUE` permission controls this.
+- **A draft that already has a resolved state cannot be discarded while the lock is on.** YouTrack
+  clears `isReported` when it logically deletes an issue, so the rule cannot tell a discarded draft
+  from a deleted issue. Set the state of the draft to an unresolved value, then discard it.
 - **The app does not control a move to a different project.** The rule ignores a save that changes
   the project. YouTrack uses the rules of the destination project for a move. That project can have
   no lock, so the app cannot stop a move out of a locked project. The app therefore also permits a

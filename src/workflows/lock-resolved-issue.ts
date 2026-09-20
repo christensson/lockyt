@@ -14,7 +14,8 @@ import { requirements } from '../backend/requirements';
 /**
  * Locks an issue that is resolved.
  *
- * The rule rejects each change to a locked issue. The one permitted change
+ * The rule rejects each change to a locked issue, and its deletion unless
+ * the settings permit it. The one permitted change
  * is to reopen the issue. The settings of the project tell which users can
  * reopen an issue, and which changes stay permitted while the issue is
  * locked.
@@ -295,7 +296,12 @@ export const rule = Issue.onChange({
 
   guard(ctx) {
     const issue = ctx.issue;
-    if (issue.isNew || issue.becomesRemoved || !issue.isReported) {
+    if (issue.isNew) {
+      return false;
+    }
+    // A draft is not locked. YouTrack also clears `isReported` when it
+    // logically deletes an issue, so a removal must skip this test.
+    if (!issue.becomesRemoved && !issue.isReported) {
       return false;
     }
     // The rule cannot control a move. YouTrack uses the rules of the
@@ -313,6 +319,16 @@ export const rule = Issue.onChange({
     const issue = ctx.issue;
     const project = issue.project;
     const settings = readSettings(project);
+
+    // A removal comes alone. Handle it before the rule reads the change sets.
+    if (issue.becomesRemoved) {
+      check(
+        settings.allowDelete,
+        'Issue ' + issue.id + ' is resolved and locked. You cannot delete it. Reopen the issue first.'
+      );
+      return;
+    }
+
     const changes = collectChanges(issue, project, settings);
 
     if (issue.becomesUnresolved) {
@@ -323,6 +339,10 @@ export const rule = Issue.onChange({
     const blockedCount = changes.fields.length + changes.parts.length;
     check(blockedCount === 0, blockMessage(issue, changes));
   },
+
+  // Without `removal: true` YouTrack never runs the rule when a user deletes
+  // the issue, and the deletion check above never runs.
+  runOn: { change: true, removal: true },
 
   requirements
 });

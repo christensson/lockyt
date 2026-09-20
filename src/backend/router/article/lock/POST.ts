@@ -32,6 +32,7 @@ export type SetArticleLockRes = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
 };
 
 /**

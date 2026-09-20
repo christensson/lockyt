@@ -41,6 +41,7 @@ export type ArticleLockState = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
 };
 
 /** The result of a freeze or an unfreeze request. */
@@ -173,7 +174,8 @@ export function readArticleLockState(article: ArticleEntity, user: UserEntity): 
     allowComments: settings.allowComments,
     allowAttachments: settings.allowAttachments,
     allowTags: settings.allowTags,
-    allowChildArticles: settings.allowChildArticles
+    allowChildArticles: settings.allowChildArticles,
+    allowDelete: settings.allowDelete
   };
 }
 

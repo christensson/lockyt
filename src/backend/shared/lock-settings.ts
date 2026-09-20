@@ -21,6 +21,7 @@ export type IssueLockSettings = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
 };
 
 /** The lock settings for articles. */
@@ -31,6 +32,7 @@ export type ArticleLockSettings = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
 };
 
 /** The lock settings of one project. */
@@ -69,7 +71,8 @@ export function defaultIssueSettings(): IssueLockSettings {
     allowLinks: true,
     allowWorkItems: true,
     allowAttachments: false,
-    allowTags: false
+    allowTags: false,
+    allowDelete: false
   };
 }
 
@@ -81,7 +84,8 @@ export function defaultArticleSettings(): ArticleLockSettings {
     allowComments: true,
     allowAttachments: false,
     allowTags: true,
-    allowChildArticles: true
+    allowChildArticles: true,
+    allowDelete: false
   };
 }
 
@@ -96,12 +100,12 @@ export function defaultLockSettings(): LockSettings {
 
 /** The names of the boolean issue settings. */
 export function issueBooleanKeys(): string[] {
-  return ["enabled", "allowComments", "allowLinks", "allowWorkItems", "allowAttachments", "allowTags"];
+  return ["enabled", "allowComments", "allowLinks", "allowWorkItems", "allowAttachments", "allowTags", "allowDelete"];
 }
 
 /** The names of the boolean article settings. */
 export function articleBooleanKeys(): string[] {
-  return ["enabled", "allowComments", "allowAttachments", "allowTags", "allowChildArticles"];
+  return ["enabled", "allowComments", "allowAttachments", "allowTags", "allowChildArticles", "allowDelete"];
 }
 
 function toObject(raw: unknown): Record<string, unknown> | null {

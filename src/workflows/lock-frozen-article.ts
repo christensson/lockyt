@@ -9,7 +9,7 @@ import { readArticleSettings } from '../backend/shared/article-lock';
  *
  * INVARIANT: this rule reads only `isLocked` from the extension properties,
  * and it tests only these changes: title, content, comments, attachments,
- * tags, child articles and visibility. It must never test an extension
+ * tags, child articles, visibility and the removal of the article. It must never test an extension
  * property, `updated` or `updatedBy`. The `article/lock` POST handler freezes
  * and unfreezes in a transaction that changes only extension properties. That
  * transaction must pass this rule.
@@ -112,7 +112,7 @@ export const rule = Article.onChange({
 
   guard(ctx) {
     const article = ctx.article;
-    if (article.isNew || article.becomesRemoved || article.isChanged('project')) {
+    if (article.isNew || article.isChanged('project')) {
       return false;
     }
     if (article.extensionProperties.isLocked !== true) {
@@ -124,9 +124,23 @@ export const rule = Article.onChange({
   action(ctx) {
     const article = ctx.article;
     const settings = readArticleSettings(article);
+
+    // A removal comes alone. Handle it before the rule reads the change sets.
+    if (article.becomesRemoved) {
+      check(
+        settings.allowDelete,
+        'Article ' + article.id + ' is frozen. You cannot delete it. Unfreeze the article first.'
+      );
+      return;
+    }
+
     const blocked = collectBlockedParts(article, settings);
     check(blocked.length === 0, blockMessage(article, blocked));
   },
+
+  // Without `removal: true` YouTrack never runs the rule when a user deletes
+  // the article, and the deletion check above never runs.
+  runOn: { change: true, removal: true },
 
   requirements: {}
 });

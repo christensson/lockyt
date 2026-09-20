@@ -13,6 +13,7 @@ export type SaveIssueSettingsReq = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
 };
 
 /**
@@ -28,6 +29,7 @@ export type SaveIssueSettingsRes = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
 };
 
 /**

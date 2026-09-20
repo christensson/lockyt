@@ -12,6 +12,7 @@ export type SaveArticleSettingsReq = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
 };
 
 /**
@@ -26,6 +27,7 @@ export type SaveArticleSettingsRes = {
   allowAttachments: boolean;
   allowTags: boolean;
   allowChildArticles: boolean;
+  allowDelete: boolean;
 };
 
 /**

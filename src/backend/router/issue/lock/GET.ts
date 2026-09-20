@@ -20,6 +20,7 @@ export type IssueLockRes = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
   reporterLogin: string;
   reporterName: string;
   resolverLogin: string;

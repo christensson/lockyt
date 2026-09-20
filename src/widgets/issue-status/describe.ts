@@ -11,6 +11,7 @@ export type IssueLockDescription = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
   reporterName: string;
   resolverName: string;
 };
@@ -38,6 +39,9 @@ export function permittedSentences(state: IssueLockDescription): string[] {
   if (state.allowTags) {
     list.push('You can add and remove a tag.');
   }
+  if (state.allowDelete) {
+    list.push('You can delete the issue.');
+  }
   list.push('You can reopen the issue. Reopen the issue alone, then edit it.');
   return list;
 }
@@ -64,6 +68,9 @@ export function blockedSentences(state: IssueLockDescription): string[] {
   }
   if (!state.allowTags) {
     list.push('You cannot add or remove a tag.');
+  }
+  if (!state.allowDelete) {
+    list.push('You cannot delete the issue. Reopen it first.');
   }
   list.push('You cannot change the resolution directly. Reopen the issue, then resolve it again.');
   return list;

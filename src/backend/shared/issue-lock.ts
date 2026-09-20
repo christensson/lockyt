@@ -28,6 +28,7 @@ export type IssueLockState = {
   allowWorkItems: boolean;
   allowAttachments: boolean;
   allowTags: boolean;
+  allowDelete: boolean;
   reporterLogin: string;
   reporterName: string;
   resolverLogin: string;
@@ -163,6 +164,7 @@ export function readIssueLockState(issue: IssueEntity, user: UserEntity): IssueL
     allowWorkItems: settings.allowWorkItems,
     allowAttachments: settings.allowAttachments,
     allowTags: settings.allowTags,
+    allowDelete: settings.allowDelete,
     reporterLogin: loginOf(reporter),
     reporterName: nameOf(reporter),
     resolverLogin: loginOf(resolver),

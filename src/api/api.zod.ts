@@ -30,6 +30,7 @@ export const articleLockResSchema = z.object({
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
   allowChildArticles: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const articleSettingsReqSchema = z.object({
@@ -49,6 +50,7 @@ export const articleSettingsResSchema = z.object({
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
   allowChildArticles: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const issueLockReqSchema = z.object({
@@ -70,6 +72,7 @@ export const issueLockResSchema = z.object({
   allowWorkItems: z.boolean(),
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
+  allowDelete: z.boolean(),
   reporterLogin: z.string(),
   reporterName: z.string(),
   resolverLogin: z.string(),
@@ -97,6 +100,7 @@ export const issueSettingsResSchema = z.object({
   allowWorkItems: z.boolean(),
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const saveArticleSettingsReqSchema = z.object({
@@ -113,6 +117,7 @@ export const saveArticleSettingsReqSchema = z.object({
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
   allowChildArticles: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const saveArticleSettingsResSchema = z.object({
@@ -130,6 +135,7 @@ export const saveArticleSettingsResSchema = z.object({
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
   allowChildArticles: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const saveIssueSettingsReqSchema = z.object({
@@ -147,6 +153,7 @@ export const saveIssueSettingsReqSchema = z.object({
   allowWorkItems: z.boolean(),
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const saveIssueSettingsResSchema = z.object({
@@ -165,6 +172,7 @@ export const saveIssueSettingsResSchema = z.object({
   allowWorkItems: z.boolean(),
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 export const setArticleLockReqSchema = z.object({
@@ -198,6 +206,7 @@ export const setArticleLockResSchema = z.object({
   allowAttachments: z.boolean(),
   allowTags: z.boolean(),
   allowChildArticles: z.boolean(),
+  allowDelete: z.boolean(),
 });
 
 // Nested schema object for validation system
