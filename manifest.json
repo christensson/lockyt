@@ -12,11 +12,11 @@
   "icon": "icon.svg",
   "widgets": [
     {
-      "key": "project-tag",
+      "key": "project-lock-config",
       "name": "Lock",
-      "indexPath": "project-tag/index.html",
+      "indexPath": "project-lock-config/index.html",
       "extensionPoint": "PROJECT_SETTINGS",
-      "iconPath": "project-tag/widget-icon.svg",
+      "iconPath": "project-lock-config/widget-icon.svg",
       "description": "Sets who can reopen a locked issue or unfreeze a frozen article, and which changes stay permitted.",
       "permissions": [
         "UPDATE_PROJECT"

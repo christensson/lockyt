@@ -237,7 +237,7 @@ src/
 │   └── utils/
 │       └── logger.ts             # Logger utility for frontend components
 ├── widgets/
-│   ├── project-tag/              # The Lock tab in the settings of the project
+│   ├── project-lock-config/      # The Lock tab in the settings of the project
 │   ├── article-status/           # The status line above the activity stream of an article
 │   ├── issue-status/            # The status line in the field panel of a resolved issue
 │   └── shared/                   # The dialog and the frame logic that the status lines share
