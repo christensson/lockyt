@@ -184,7 +184,7 @@ function LockSection<T extends SectionValue<R>, R extends string>(props: Section
             onChange={event => onChange(item.key, event.target.checked)}
           />
         ))}
-        <Text info>{'The app rejects each change that is not in this list.'}</Text>
+        <Text info>{'A change that is not in this list is rejected.'}</Text>
       </fieldset>
     </section>
   );
@@ -236,7 +236,7 @@ const AppComponent: React.FunctionComponent = () => {
         setTicket(ticketValue);
         setArticle(articleValue);
       })
-      .catch((cause: unknown) => { setError('The app cannot read the settings: ' + String(cause)); })
+      .catch((cause: unknown) => { setError('Cannot read the settings: ' + String(cause)); })
       .finally(() => { setLoading(false); });
   }, []);
 
@@ -266,14 +266,14 @@ const AppComponent: React.FunctionComponent = () => {
         setError(joinErrors(ticketResult, articleResult));
       }
     } catch (cause: unknown) {
-      setError('The app cannot save the settings: ' + String(cause));
+      setError('Cannot save the settings: ' + String(cause));
     } finally {
       setSaving(false);
     }
   }, [ticket, article]);
 
   if (loading) {
-    return <div className="widget"><Loader message="The app reads the settings."/></div>;
+    return <div className="widget"><Loader message="Reading settings..."/></div>;
   }
 
   return (
@@ -308,7 +308,7 @@ const AppComponent: React.FunctionComponent = () => {
 
       <div className="actions">
         <Button primary loader={saving} disabled={saving} onClick={save}>{'Save'}</Button>
-        {saved && <Text info>{'The app saved the settings.'}</Text>}
+        {saved && <Text info>{'Settings saved.'}</Text>}
       </div>
 
       {error && <Text>{error}</Text>}
